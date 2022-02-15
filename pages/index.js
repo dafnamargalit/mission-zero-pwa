@@ -1,4 +1,4 @@
-import React, { useState} from 'react';
+import React, { useState } from 'react';
 import Head from 'next/head';
 import styled from 'styled-components';
 import { Logo, Car, Gear, HomeCommand } from '../icons';
@@ -28,7 +28,9 @@ const Home = () => {
     device = car
     if (device.gatt) {
       console.log("connected");
-    device.gatt.connect();
+      device.gatt.connect();
+      setIsConnected(true);
+
     }
   }
 
@@ -46,9 +48,7 @@ const Home = () => {
           console.log('  > ' + device.name + ' (' + device.id + ')');
         }
         setDevices(devices)
-      }).then(
-
-      )
+      })
       .catch(error => {
         console.log('Argh! ' + error);
       });
@@ -61,6 +61,7 @@ const Home = () => {
     })
       .then(device => {
         console.log('> Requested ' + device.name + ' (' + device.id + ')');
+        device.gatt.connect();
         setInitialized(true);
       }).catch(error => {
         console.log('Argh! ' + error);

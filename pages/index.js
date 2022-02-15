@@ -28,12 +28,7 @@ const Home = () => {
     device = car
     if (device.gatt) {
       console.log("connected");
-    return (device.gatt.connect()).then(server => server.getPrimaryService(serviceUUID))
-    .then(service => {
-      setIsConnected(true);
-      chosenService = service;
-    })
-
+    device.gatt.connect();
     }
   }
 
@@ -51,7 +46,9 @@ const Home = () => {
           console.log('  > ' + device.name + ' (' + device.id + ')');
         }
         setDevices(devices)
-      })
+      }).then(
+
+      )
       .catch(error => {
         console.log('Argh! ' + error);
       });

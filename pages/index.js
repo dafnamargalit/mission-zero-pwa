@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Head from 'next/head';
 import styled from 'styled-components';
-import { Logo, Car, Gear, HomeCommand } from '../icons';
+import { Logo, Car, BLEConnect, BLEDisconnect, HomeCommand } from '../icons';
 import { motion } from 'framer-motion';
 import ReactModal from 'react-modal';
 import Link from 'next/link';
@@ -9,36 +9,92 @@ import Link from 'next/link';
 const Home = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [paired_devices, setDevices] = useState([]);
-  const [initialized, setInitialized] = useState(false);
-  const [settings, setSettings] = useState(false);
-
+  const [characteristicCache, setCharacteristic] = useState(null);
+  const [receivedData, setReceived] = useState(null);
+  const [deviceCache, setDevice] = useState(null);
   const serviceUUID = 0xFFE0;
-  const charUUID = 0xAAA0;
-  let device, chosenService = null, sendCharacteristic, receiveCharacteristic;
+  const charUUID = 0xFFE1;
 
-  const openSettings = () => {
-    setSettings(true);
-  };
+  const pairCar = (device) => {
+    if(device.gatt.connected && characteristicCache){
+      console.log("Already Connected.");
+      return;
+    }
 
-  const closeSettings = () => {
-    setSettings(false);
-  };
+    device.gatt.connect().then(
+      server => {
+        setDevice(device);
+        setIsConnected(true);
+        console.log("GATT Server connected, finding service...");
+        return server.getPrimaryService(serviceUUID);
+      }
+    ).then(
+      service => {
+        console.log("Found service, finding characteristic...");
+        return service.getCharacteristic(charUUID);
+      }
+    ).then(
+      characteristic => {
+        console.log("Found characteristic, starting notifications...");
+        setCharacteristic(characteristic);
+        return characteristic.startNotifications();
+      }
+    ).then(notification => {
+      console.log(notification, "Notifications started.")
+      
+    }
+    )
+  }
 
-  const pairCar = (car) => {
-    device = car
-    if (device.gatt) {
-      console.log("connected");
-      device.gatt.connect();
-      setIsConnected(true);
+  function disconnect() {
+    if (deviceCache) {
+      console.log('Disconnecting from "' + deviceCache.name + '" bluetooth device...');
+  
+      if (deviceCache.gatt.connected) {
+        deviceCache.gatt.disconnect();
+        console.log('"' + deviceCache.name + '" bluetooth device disconnected');
+      }
+      else {
+        console.log('"' + deviceCache.name +
+            '" bluetooth device is already disconnected');
+      }
+    }
+  
+    if (characteristicCache) {
+      setCharacteristic(null);
+    }
+  
+    setDevice(null);
+    setIsConnected(false);
+    setDevices([]);
+  }
 
+  const sendCommand = (data) => {
+    data = String(data);
+
+    if (!data || !characteristicCache) {
+      return;
+    }
+  
+    data += '\n';
+  
+    if (data.length > 20) {
+      let chunks = data.match(/(.|[\r\n]){1,20}/g);
+  
+      writeToCharacteristic(characteristicCache, chunks[0]);
+  
+      for (let i = 1; i < chunks.length; i++) {
+        setTimeout(() => {
+          writeToCharacteristic(characteristicCache, chunks[i]);
+        }, i * 100);
+      }
+    }
+    else {
+      characteristicCache.writeValue(new TextEncoder().encode(data))
     }
   }
 
-  const sendCommand = (command) => {
-    console.log(sendCharacteristic);
-  }
-
-  function onGetBluetoothDevicesButtonClick() {
+  function getDevicesOnClick() {
     console.log('Getting existing permitted Bluetooth devices...');
 
     navigator.bluetooth.getDevices()
@@ -54,15 +110,13 @@ const Home = () => {
       });
   }
 
-  function onRequestBluetoothDeviceButtonClick() {
+  function requestDeviceOnClick() {
     console.log('Requesting any Bluetooth device...');
     navigator.bluetooth.requestDevice({
       filters: [{ services: [serviceUUID] }]
     })
       .then(device => {
         console.log('> Requested ' + device.name + ' (' + device.id + ')');
-        device.gatt.connect();
-        setInitialized(true);
       }).catch(error => {
         console.log('Argh! ' + error);
       });
@@ -81,45 +135,13 @@ const Home = () => {
       </Head>
       <HomeHeader>
         <motion.div whileTap={{ scale: 1.2 }} whileHover={{ scale: 1.1 }}>
-          <GearIcon onClick={openSettings} />
+          {!isConnected ? <BLEConnectIcon onClick={() => { requestDeviceOnClick(); }} />
+            : <BLEDisconnectIcon onClick={() => { disconnect(); }} />}
         </motion.div>
       </HomeHeader>
 
-      <ReactModal
-        isOpen={settings}
-        onRequestClose={closeSettings}
-        ariaHideApp={false}
-        contentLabel="Selected Option"
-        style={{
-          overlay: {
-            backgroundColor: 'rgba(0,0,0,0.3)'
-          },
-          content: {
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'white',
-            border: 'none',
-            borderRadius: '1em',
-            height: '60vh',
-            width: '80vh',
-            left: '50%',
-            top: '50%',
-            right: '0',
-            bottom: '0',
-            transform: 'translate(-50%, -50%)'
-          }
-        }
-        }
-      >
-        <motion.div whileTap={{ scale: 1.2 }} whileHover={{ scale: 1.1 }}>
-          <InitDevices onClick={() => { onRequestBluetoothDeviceButtonClick() }}> Initialize Devices </InitDevices>
-        </motion.div>
-
-      </ReactModal>
-
       <motion.div whileTap={{ scale: 1.2 }} whileHover={{ scale: 1.1 }}>
-        <Button onClick={() => { onGetBluetoothDevicesButtonClick(); }} />
+        <Button onClick={() => { getDevicesOnClick(); }} />
       </motion.div>
 
       {!isConnected && paired_devices.map((car, i) => {
@@ -169,10 +191,13 @@ const CarSelect = styled(Car)`
   path {fill: ${({ carColor }) => carColor ? carColor : 'white'};}
 `;
 
-const GearIcon = styled(Gear)`
-  width: 100px;
+const BLEConnectIcon = styled(BLEConnect)`
+  width: 80px;
 `;
 
+const BLEDisconnectIcon = styled(BLEDisconnect)`
+  width: 80px;
+`;
 
 const SendHome = styled(HomeCommand)`
     height: 20vh;

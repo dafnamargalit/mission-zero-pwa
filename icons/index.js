@@ -47,6 +47,18 @@ export const HomeCommand = (props) => (
   </Svg>
 )
 
+export const WorkCommand = (props) => (
+  <Svg {...props} viewBox="0 0 1826.82 984.1">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 93.5 93.5">
+      <g id="Layer_2" data-name="Layer 2">
+        <g id="Layer_1-2" data-name="Layer 1">
+          <circle stroke="#fff" strokeMiterlimit={10} cx="46.75" cy="46.75" r="46.25" />
+          <path fill="#fff" d="M41.75,24.75a3,3,0,0,0-3,3v3h-14a3,3,0,0,0-3,3v13a3,3,0,0,0,3,3h44a3,3,0,0,0,3-3v-13a3,3,0,0,0-3-3h-14v-3a3,3,0,0,0-3-3Zm0,2h10a1,1,0,0,1,1,1v3h-12v-3A1,1,0,0,1,41.75,26.75Zm5,17a2,2,0,1,1-2,2A2,2,0,0,1,46.75,43.75Zm-25,5v17a3,3,0,0,0,3,3h44a3,3,0,0,0,3-3v-17a3,3,0,0,1-3,3h-44A3,3,0,0,1,21.75,48.75Z" />
+        </g>
+      </g>
+    </svg>
+  </Svg>
+)
 export const BLEConnect = (props) => (
   <Svg {...props} viewBox="0 0 1826.82 984.1">
     <svg id="Layer_1" version="1.1" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" >
@@ -62,10 +74,10 @@ export const BLEDisconnect = (props) => (
     <svg version="1.1" viewBox="0 0 16 20">
       <g fill="none" fillRule="evenodd" id="Page-1" stroke="none" strokeWidth="1">
         <g fill="#000" id="Icons-Device" transform="translate(-4.000000, -42.000000)">
-        <g id="bluetooth-disabled" transform="translate(4.000000, 42.000000)">
-          <path fill="#fff" d="M9,3.8 L10.9,5.7 L9.3,7.3 L10.7,8.7 L13.7,5.7 L8,0 L7,0 L7,5 L9,7 L9,3.8 L9,3.8 Z M1.4,2 L0,3.4 L6.6,10 L1,15.6 L2.4,17 L7,12.4 L7,20 L8,20 L12.3,15.7 L14.6,18 L16,16.6 L1.4,2 L1.4,2 Z M9,16.2 L9,12.4 L10.9,14.3 L9,16.2 L9,16.2 Z" id="Shape" />
+          <g id="bluetooth-disabled" transform="translate(4.000000, 42.000000)">
+            <path fill="#fff" d="M9,3.8 L10.9,5.7 L9.3,7.3 L10.7,8.7 L13.7,5.7 L8,0 L7,0 L7,5 L9,7 L9,3.8 L9,3.8 Z M1.4,2 L0,3.4 L6.6,10 L1,15.6 L2.4,17 L7,12.4 L7,20 L8,20 L12.3,15.7 L14.6,18 L16,16.6 L1.4,2 L1.4,2 Z M9,16.2 L9,12.4 L10.9,14.3 L9,16.2 L9,16.2 Z" id="Shape" />
+          </g>
         </g>
-      </g>
       </g>
     </svg>
   </Svg>

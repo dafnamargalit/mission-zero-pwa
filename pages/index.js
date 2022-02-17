@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Head from 'next/head';
 import styled from 'styled-components';
-import { Logo, Car, BLEConnect, BLEDisconnect, HomeCommand } from '../icons';
+import { Logo, Car, BLEConnect, BLEDisconnect, HomeCommand, WorkCommand } from '../icons';
 import { motion } from 'framer-motion';
 import ReactModal from 'react-modal';
 import Link from 'next/link';
@@ -11,6 +11,7 @@ const Home = () => {
   const [paired_devices, setDevices] = useState([]);
   const [characteristicCache, setCharacteristic] = useState(null);
   const [receivedData, setReceived] = useState(null);
+  const [receiveModal, setModal] = useState(false);
   const [deviceCache, setDevice] = useState(null);
   const serviceUUID = 0xFFE0;
   const charUUID = 0xFFE1;
@@ -39,13 +40,20 @@ const Home = () => {
         setCharacteristic(characteristic);
         return characteristic.startNotifications();
       }
-    ).then(notification => {
-      console.log(notification, "Notifications started.")
-      
+    ).then(characteristic => {
+      console.log(characteristic, "Notifications started.");
+      characteristic.addEventListener('characteristicvaluechanged',
+      handleCharacteristicValueChanged);
     }
     )
   }
 
+  function handleCharacteristicValueChanged(event){
+    let value = new TextDecoder().decode(event.target.value);
+    setReceived(value);
+    setModal(true);
+    console.log(value, 'in');
+  }
   function disconnect() {
     if (deviceCache) {
       console.log('Disconnecting from "' + deviceCache.name + '" bluetooth device...');
@@ -61,9 +69,12 @@ const Home = () => {
     }
   
     if (characteristicCache) {
+      characteristicCache.removeEventListener('characteristicvaluechanged',
+      handleCharacteristicValueChanged);
       setCharacteristic(null);
     }
   
+
     setDevice(null);
     setIsConnected(false);
     setDevices([]);
@@ -122,6 +133,10 @@ const Home = () => {
       });
   }
 
+  const closeModal = () => {
+    setModal(false);
+  };
+
 
   return (
     <HomeWrap>
@@ -153,9 +168,45 @@ const Home = () => {
       })}
 
       {isConnected &&
+      <CircleWrapper>
         <motion.div whileTap={{ scale: 1.2 }} whileHover={{ scale: 1.1 }}>
-          <SendHome onClick={() => { sendCommand('home'); }} />
-        </motion.div>}
+          <SendHome onClick={() => { sendCommand('h'); }} />
+        </motion.div>
+        <motion.div whileTap={{ scale: 1.2 }} whileHover={{ scale: 1.1 }}>
+          <SendWork onClick={() => { sendCommand('w'); }} />
+        </motion.div>
+      </CircleWrapper>
+        }
+      
+      <ReactModal
+        isOpen={receiveModal}
+        onRequestClose={closeModal}
+        ariaHideApp={false}
+        contentLabel="Selected Option"
+        style={{
+          overlay: {
+            backgroundColor: 'rgba(0,0,0,0.3)'
+          },
+          content: {
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'white',
+            border: 'none',
+            borderRadius: '1em',
+            height: '60vh',
+            width: '80vh',
+            left: '50%',
+            top: '50%',
+            right: '0',
+            bottom: '0',
+            transform: 'translate(-50%, -50%)'
+          }
+        }
+        }
+      >
+       Received Data: {receivedData}
+      </ReactModal>
 
     </HomeWrap>
   )
@@ -200,10 +251,21 @@ const BLEDisconnectIcon = styled(BLEDisconnect)`
 `;
 
 const SendHome = styled(HomeCommand)`
-    height: 20vh;
+  height: 20vh;
+  margin-right: 20vh;
 `;
 
+const SendWork = styled(WorkCommand)`
+  height: 20vh;
+  margin-left: 20vh;
+`;
 
+const CircleWrapper = styled.div`
+position: absolute;
+display: flex;
+align-items: center;
+
+`
 const colors = ['red', 'blue', 'green', 'purple'];
 
 

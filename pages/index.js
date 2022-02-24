@@ -4,7 +4,6 @@ import styled from 'styled-components';
 import { Logo, Car, BLEConnect, BLEDisconnect, HomeCommand, WorkCommand } from '../icons';
 import { motion } from 'framer-motion';
 import ReactModal from 'react-modal';
-import Link from 'next/link';
 
 const Home = () => {
   const [isConnected, setIsConnected] = useState(false);
@@ -163,6 +162,7 @@ const Home = () => {
         return (
           <motion.div key={car.name} whileTap={{ scale: 1.2 }} whileHover={{ scale: 1.1 }}>
             <CarSelect carColor={colors[i]} onClick={() => { pairCar(car); }} />
+            {car.name}
           </motion.div>
         )
       })}
@@ -172,9 +172,9 @@ const Home = () => {
         <motion.div whileTap={{ scale: 1.2 }} whileHover={{ scale: 1.1 }}>
           <SendHome onClick={() => { sendCommand('h'); }} />
         </motion.div>
-        <motion.div whileTap={{ scale: 1.2 }} whileHover={{ scale: 1.1 }}>
+        {/* <motion.div whileTap={{ scale: 1.2 }} whileHover={{ scale: 1.1 }}>
           <SendWork onClick={() => { sendCommand('w'); }} />
-        </motion.div>
+        </motion.div> */}
       </CircleWrapper>
         }
       
@@ -215,6 +215,7 @@ const Home = () => {
 const HomeWrap = styled.div`
   height: 100vh;
   display: flex;
+  margin: 0;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -231,12 +232,7 @@ const Button = styled(Logo)`
   height: 50vh;
 `;
 
-const InitDevices = styled.button`
-  color: white;
-  background-color: blue;
-  border-radius: 1em;
-  padding: 1em;
-`;
+
 const CarSelect = styled(Car)`
   height: 20vh;
   path {fill: ${({ carColor }) => carColor ? carColor : 'white'};}
@@ -255,16 +251,14 @@ const SendHome = styled(HomeCommand)`
   margin-right: 20vh;
 `;
 
-const SendWork = styled(WorkCommand)`
-  height: 20vh;
-  margin-left: 20vh;
-`;
+// const SendWork = styled(WorkCommand)`
+//   height: 20vh;
+//   margin-left: 20vh;
+// `;
 
 const CircleWrapper = styled.div`
-position: absolute;
 display: flex;
 align-items: center;
-
 `
 const colors = ['red', 'blue', 'green', 'purple'];
 

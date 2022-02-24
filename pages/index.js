@@ -229,7 +229,7 @@ const HomeHeader = styled.div`
 `
 
 const Button = styled(Logo)`
-  height: 50vh;
+  height: 30vh;
 `;
 
 

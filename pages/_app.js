@@ -1,17 +1,21 @@
 import { createGlobalStyle } from "styled-components"
 
 const GlobalStyle = createGlobalStyle`
-html, body {
-  height: 100vh;
-  margin: 0;
-}
+html,
+      body,
+      body > div:first-child,
+      div#__next,
+      div#__next > div {
+        height: 100%;
+        margin: 0;
+      }
 `
 function MyApp({ Component, pageProps }) {
   return (
-  <>
-    <GlobalStyle/>
-    <Component {...pageProps} />
-  </>
+    <>
+      <GlobalStyle />
+      <Component {...pageProps} />
+    </>
   )
 }
 

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import styled from 'styled-components';
-import { Logo, Car, BLEConnect, BLEDisconnect, HomeCommand, WorkCommand } from '../icons';
+import { Logo, Car, BLEConnect, BLEDisconnect, HomeCommand, WorkCommand, SolarCommand, OutageCommand } from '../icons';
 import { motion } from 'framer-motion';
 import ReactModal from 'react-modal';
 
@@ -12,11 +12,12 @@ const Home = () => {
   const [receivedData, setReceived] = useState(null);
   const [receiveModal, setModal] = useState(false);
   const [deviceCache, setDevice] = useState(null);
+
   const serviceUUID = 0xFFE0;
   const charUUID = 0xFFE1;
 
   const pairCar = (device) => {
-    if(device.gatt.connected && characteristicCache){
+    if (device.gatt.connected && characteristicCache) {
       console.log("Already Connected.");
       return;
     }
@@ -42,12 +43,12 @@ const Home = () => {
     ).then(characteristic => {
       console.log(characteristic, "Notifications started.");
       characteristic.addEventListener('characteristicvaluechanged',
-      handleCharacteristicValueChanged);
+        handleCharacteristicValueChanged);
     }
     )
   }
 
-  function handleCharacteristicValueChanged(event){
+  function handleCharacteristicValueChanged(event) {
     let value = new TextDecoder().decode(event.target.value);
     setReceived(value);
     setModal(true);
@@ -56,23 +57,23 @@ const Home = () => {
   function disconnect() {
     if (deviceCache) {
       console.log('Disconnecting from "' + deviceCache.name + '" bluetooth device...');
-  
+
       if (deviceCache.gatt.connected) {
         deviceCache.gatt.disconnect();
         console.log('"' + deviceCache.name + '" bluetooth device disconnected');
       }
       else {
         console.log('"' + deviceCache.name +
-            '" bluetooth device is already disconnected');
+          '" bluetooth device is already disconnected');
       }
     }
-  
+
     if (characteristicCache) {
       characteristicCache.removeEventListener('characteristicvaluechanged',
-      handleCharacteristicValueChanged);
+        handleCharacteristicValueChanged);
       setCharacteristic(null);
     }
-  
+
 
     setDevice(null);
     setIsConnected(false);
@@ -85,14 +86,14 @@ const Home = () => {
     if (!data || !characteristicCache) {
       return;
     }
-  
+
     data += '\n';
-  
+
     if (data.length > 20) {
       let chunks = data.match(/(.|[\r\n]){1,20}/g);
-  
+
       writeToCharacteristic(characteristicCache, chunks[0]);
-  
+
       for (let i = 1; i < chunks.length; i++) {
         setTimeout(() => {
           writeToCharacteristic(characteristicCache, chunks[i]);
@@ -154,9 +155,7 @@ const Home = () => {
         </motion.div>
       </HomeHeader>
 
-      <motion.div whileTap={{ scale: 1.2 }} whileHover={{ scale: 1.1 }}>
         <Button onClick={() => { getDevicesOnClick(); }} />
-      </motion.div>
 
       {!isConnected && paired_devices.map((car, i) => {
         return (
@@ -168,16 +167,14 @@ const Home = () => {
       })}
 
       {isConnected &&
-      <CircleWrapper>
-        <motion.div whileTap={{ scale: 1.2 }} whileHover={{ scale: 1.1 }}>
-          <SendHome onClick={() => { sendCommand('h'); }} />
-        </motion.div>
-        {/* <motion.div whileTap={{ scale: 1.2 }} whileHover={{ scale: 1.1 }}>
-          <SendWork onClick={() => { sendCommand('w'); }} />
-        </motion.div> */}
-      </CircleWrapper>
-        }
-      
+        <>
+            <SendHome onClick={() => { sendCommand('h'); }} />
+            <SendWork onClick={() => { sendCommand('w'); }} />
+            <SendSolar onClick={() => { sendCommand('s'); }} />
+            <SendOutage onClick={() => { sendCommand('o'); }} />
+        </>
+      }
+
       <ReactModal
         isOpen={receiveModal}
         onRequestClose={closeModal}
@@ -205,7 +202,7 @@ const Home = () => {
         }
         }
       >
-       Received Data: {receivedData}
+        Received Data: {receivedData}
       </ReactModal>
 
     </HomeWrap>
@@ -229,7 +226,19 @@ const HomeHeader = styled.div`
 `
 
 const Button = styled(Logo)`
+  position: absolute;
   height: 30vh;
+  width: 30vh;
+  border-radius: 50%;
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
+  right: 0;
+  text-align: center;
+  transition: transform .2s;
+  &:hover, &:active{
+    transform: scale(1.05);
+  }
 `;
 
 
@@ -239,27 +248,79 @@ const CarSelect = styled(Car)`
 `;
 
 const BLEConnectIcon = styled(BLEConnect)`
-  width: 80px;
+  width: 60px;
 `;
 
 const BLEDisconnectIcon = styled(BLEDisconnect)`
-  width: 80px;
+  width: 40px;
+  padding: 10px;
 `;
 
 const SendHome = styled(HomeCommand)`
-  height: 20vh;
-  margin-right: 20vh;
+  position: absolute;
+  height: 10vh;
+  width: 10vh;
+  border-radius: 50%;
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
+  right: 0;
+  transition: transform .2s;
+  transform: translateY(-25vh);
+  &:hover, &:active{
+    transform: scale(1.05) translateY(-25vh);
+  }
 `;
 
-// const SendWork = styled(WorkCommand)`
-//   height: 20vh;
-//   margin-left: 20vh;
-// `;
+const SendWork = styled(WorkCommand)`
+  position: absolute;
+  height: 10vh;
+  width: 10vh;
+  border-radius: 50%;
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
+  right: 0;
+  transition: transform .2s;
+  transform: translateY(25vh);
+  &:hover, &:active{
+    transform: scale(1.05) translateY(25vh);
+  }
+`;
 
-const CircleWrapper = styled.div`
-display: flex;
-align-items: center;
-`
+const SendSolar = styled(SolarCommand)`
+  position: absolute;
+  height: 10vh;
+  width: 10vh;
+  border-radius: 50%;
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
+  right: 0;
+  transition: transform .2s;
+  transform: translateX(25vh);
+  &:hover, &:active{
+    transform: scale(1.05) translateX(25vh);
+  }
+`;
+
+const SendOutage = styled(OutageCommand)`
+  position: absolute;
+  height: 10vh;
+  width: 10vh;
+  border-radius: 50%;
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
+  right: 0;
+  transition: transform .2s;
+  transform: translateX(-25vh);
+  &:hover, &:active{
+    transform: scale(1.05) translateX(-25vh);
+  }
+`;
+
+
 const colors = ['red', 'blue', 'green', 'purple'];
 
 

@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Head from 'next/head';
 import styled from 'styled-components';
-import { Logo, Car, BLEConnect, BLEDisconnect, HomeCommand, WorkCommand, SolarCommand, OutageCommand } from '../icons';
+import { Logo, Car, BLEConnect, BLEDisconnect, HomeCommand, WorkCommand, SolarCommand, OutageCommand, BackArrow } from '../icons';
 import { motion } from 'framer-motion';
 import ReactModal from 'react-modal';
 
@@ -12,7 +12,11 @@ const Home = () => {
   const [receivedData, setReceived] = useState(null);
   const [receiveModal, setModal] = useState(false);
   const [deviceCache, setDevice] = useState(null);
-
+  const [h, setHomeModal] = useState(false);
+  const [s, setSolarModal] = useState(false);
+  const [w, setWorkModal] = useState(false);
+  const [o, setOutageModal] = useState(false);
+  const modalHeight = 1200;
   const serviceUUID = 0xFFE0;
   const charUUID = 0xFFE1;
 
@@ -82,6 +86,18 @@ const Home = () => {
 
   const sendCommand = (data) => {
     data = String(data);
+    if (data === 'h') {
+      setHomeModal(true);
+    }
+    if (data === 's') {
+      setSolarModal(true);
+    }
+    if (data === 'w') {
+      setWorkModal(true);
+    }
+    if (data === 'o') {
+      setOutageModal(true);
+    }
 
     if (!data || !characteristicCache) {
       return;
@@ -103,6 +119,8 @@ const Home = () => {
     else {
       characteristicCache.writeValue(new TextEncoder().encode(data))
     }
+
+
   }
 
   function getDevicesOnClick() {
@@ -155,23 +173,23 @@ const Home = () => {
         </motion.div>
       </HomeHeader>
 
-        <Button onClick={() => { getDevicesOnClick(); }} />
+      <Button onClick={() => { getDevicesOnClick(); }} />
 
       {!isConnected && paired_devices.map((car, i) => {
         return (
           <motion.div key={car.name} whileTap={{ scale: 1.2 }} whileHover={{ scale: 1.1 }}>
-            <CarSelect carColor={colors[i]} onClick={() => { pairCar(car); }} />
-            {car.name}
+            <CarSelect x={i} carColor={colors[i]} onClick={() => { pairCar(car); }} />
+            {console.log(car.name)}
           </motion.div>
         )
       })}
 
       {isConnected &&
         <>
-            <SendHome onClick={() => { sendCommand('h'); }} />
-            <SendWork onClick={() => { sendCommand('w'); }} />
-            <SendSolar onClick={() => { sendCommand('s'); }} />
-            <SendOutage onClick={() => { sendCommand('o'); }} />
+          <SendHome onClick={() => { sendCommand('h'); }} />
+          <SendWork onClick={() => { sendCommand('w'); }} />
+          <SendSolar onClick={() => { sendCommand('s'); }} />
+          <SendOutage onClick={() => { sendCommand('o'); }} />
         </>
       }
 
@@ -205,6 +223,34 @@ const Home = () => {
         Received Data: {receivedData}
       </ReactModal>
 
+      {
+        h &&
+        <SendModal>
+          <GoBack onClick={() => { setHomeModal(false) }} />
+          <HomeCommand height="30vh" />
+        </SendModal>
+      }
+      {
+        s &&
+        <SendModal>
+          <GoBack onClick={() => { setSolarModal(false) }} />
+          <SolarCommand height="30vh" />
+        </SendModal>
+      }
+      {
+        w &&
+        <SendModal>
+          <GoBack onClick={() => { setWorkModal(false) }} />
+          <WorkCommand height="30vh" />
+        </SendModal>
+      }
+      {
+        o &&
+        <SendModal>
+          <GoBack onClick={() => { setOutageModal(false) }} />
+          <OutageCommand height="30vh" />
+        </SendModal>
+      }
     </HomeWrap>
   )
 }
@@ -244,6 +290,19 @@ const Button = styled(Logo)`
 
 const CarSelect = styled(Car)`
   height: 20vh;
+  position: absolute;
+  height: 10vh;
+  width: 10vh;
+  border-radius: 50%;
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
+  right: 0;
+  transition: transform .2s;
+  transform: ${x => 'translateY(' + x + ')'};
+  &:hover, &:active{
+    transform: scale(1.05) ${x => 'translateY(' + x + ')'};
+  }
   path {fill: ${({ carColor }) => carColor ? carColor : 'white'};}
 `;
 
@@ -258,7 +317,7 @@ const BLEDisconnectIcon = styled(BLEDisconnect)`
 
 const SendHome = styled(HomeCommand)`
   position: absolute;
-  height: 10vh;
+  height: ${({ customHeight }) => customHeight ? `${customHeight}vh` : "10vh"};
   width: 10vh;
   border-radius: 50%;
   margin-left: auto;
@@ -320,7 +379,27 @@ const SendOutage = styled(OutageCommand)`
   }
 `;
 
+const SendModal = styled.div` 
+  position: absolute;
+  height: 100vh;
+  width: 100%;
+  background-color: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
 
+const GoBack = styled(BackArrow)`
+  height: 6vh;
+  position: absolute;
+  left:0;
+  top:0;
+  padding: 2em;
+  transition: transform .2s;
+  &:hover, &:active{
+    transform: scale(1.05);
+  }
+`;
 const colors = ['red', 'blue', 'green', 'purple'];
 
 

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import styled from 'styled-components';
-import { Logo, Car, BLEConnect, BLEDisconnect, HomeCommand, WorkCommand, SolarCommand, OutageCommand, BackArrow } from '../icons';
+import { Logo, Car, Battery, BatteryFull, BLEConnect, BLEDisconnect, HomeCommand, WorkCommand, SolarCommand, OutageCommand, BackArrow } from '../icons';
 import { motion } from 'framer-motion';
 import ReactModal from 'react-modal';
-import Battery from '../src/Battery';
+
 
 const Home = () => {
   const [isConnected, setIsConnected] = useState(false);
@@ -19,27 +19,10 @@ const Home = () => {
   const [o, setOutageModal] = useState(false);
   const [disabled, setDisabled] = useState(true);
   const [batteryModal, setBatteryModal] = useState(false);
-  const [battery, setBattery] = useState({ level: 0, charging: false });
+  const [battery, setBattery] = useState({ level: 100, charging: false });
 
   const serviceUUID = 0xFFE0;
   const charUUID = 0xFFE1;
-  const handleChange = ({ target: { level, charging } }) => {
-    setBattery({ level, charging });
- }
-
- useEffect(() => {
-   let battery;
-   navigator.getBattery().then(bat => {
-     battery = bat;
-     battery.addEventListener("levelchange", handleChange);
-     battery.addEventListener("chargingchange", handleChange);
-     handleChange({ target: battery });
-   });
-   return () => {
-     battery.removeEventListener("levelchange", handleChange);
-     battery.removeEventListener("chargingchange", handleChange);
-   };
- }, []);
 
   const pairCar = (device) => {
     if (device.gatt.connected && characteristicCache) {
@@ -78,6 +61,7 @@ const Home = () => {
     setWorkModal(false);
     setSolarModal(false);
     setOutageModal(false);
+    setBatteryModal(false);
     setDisabled(true);
   }
 
@@ -229,12 +213,12 @@ const Home = () => {
         </>
       }
 
-
-      <BatteryFooter>
-        <Battery {...battery} />
+      {console.log(battery.level)}
+      <BatteryFooter onClick={() => {setBatteryModal(true)}}>
+        {battery.level === 100 ? <BatteryFull height="10vh" /> : <BatteryLevel />}
       </BatteryFooter>
       <ReactModal
-        isOpen={receiveModal}
+        isOpen={receiveModal} 
         onRequestClose={closeModal}
         ariaHideApp={false}
         contentLabel="Selected Option"
@@ -268,7 +252,7 @@ const Home = () => {
         <SendModal>
           <GoBack disabled={disabled} onClick={() => { resetModal() }} />
           <Header>
-            <Title>{disabled ? "Arrived" : "Going"} Home<Dots show={disabled} /></Title>
+            <Title>{disabled ? "Going" : "Arrived"} Home<Dots show={disabled} /></Title>
           </Header>
           <HomeCommand height="30vh" />
         </SendModal>
@@ -278,7 +262,7 @@ const Home = () => {
         <SendModal>
           <GoBack disabled={disabled} onClick={() => { resetModal() }} />
           <Header>
-            <Title>{disabled ? "Arrived" : "Going"} to Solar Charging Station<Dots show={disabled} /></Title>
+            <Title>{disabled ? "Going" : "Arrived"} to Solar Charging Station<Dots show={disabled} /></Title>
           </Header>
           <SolarCommand height="30vh" />
         </SendModal>
@@ -288,7 +272,7 @@ const Home = () => {
         <SendModal>
           <GoBack disabled={disabled} onClick={() => { resetModal() }} />
           <Header>
-            <Title>{disabled ? "Arrived" : "Going"} to Work<Dots show={disabled} /></Title>
+            <Title>{disabled ? "Going" : "Arrived"} to Work<Dots show={disabled} /></Title>
           </Header>
           <WorkCommand height="30vh" />
         </SendModal>
@@ -298,7 +282,7 @@ const Home = () => {
         <SendModal>
           <GoBack disabled={disabled} onClick={() => { resetModal() }} />
           <Header>
-            <Title>{disabled ? "Completed" : "Initiating"} Power Outage Sceenario<Dots show={disabled} /></Title>
+            <Title>{disabled ? "Initiating" : "Completed"} Power Outage Scenario<Dots show={disabled} /></Title>
           </Header>
           <OutageCommand height="30vh" />
         </SendModal>
@@ -307,6 +291,10 @@ const Home = () => {
         batteryModal &&
         <SendModal>
           <GoBack disabled={true} onClick={() => { resetModal() }} />
+          <Header>
+            <Title>Battery Level</Title>
+          </Header>
+          {battery.level === 100 ? <BatteryFull height="30vh" /> : <Battery height="30vh" />}
         </SendModal>
       }
     </HomeWrap>
@@ -330,8 +318,11 @@ const HomeHeader = styled.div`
 `
 const BatteryFooter = styled.div`
   position: absolute;
-  left: 0;
-  top: 10vh;
+  right: 2vh;
+  top: 1vh;
+  &:hover, &:active{
+    transform: scale(1.05);
+  }
 `
 
 const Button = styled(Logo)`
@@ -350,6 +341,10 @@ const Button = styled(Logo)`
   }
 `;
 
+const BatteryLevel = styled(Battery)`
+  height: 10vh;
+  width: 10vh;
+`;
 
 const CarSelect = styled(Car)`
 position: absolute;
@@ -498,7 +493,7 @@ const Title = styled.div`
 const Header = styled.div` 
   display: flex;
   align-items: center;
-  height: 40vh;
+  height: 30vh;
 `;
 const colors = ['red', 'blue', 'green', 'purple'];
 

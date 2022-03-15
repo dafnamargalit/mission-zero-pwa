@@ -93,3 +93,17 @@ export const BackArrow = (props) => (
   </Svg>
 )
 
+export const Battery = (props) => (
+  <Svg {...props} viewBox="0 0 48 48" transform='rotate(90)'>
+    <path d="M0 0h48v48h-48z" />
+    <path d="M34 10.67c0-1.48-1.19-2.67-2.67-2.67h-3.33v-4h-8v4h-3.33c-1.48 0-2.67 1.19-2.67 2.67v19.33h20v-19.33z" fill="#fff" fillOpacity=".3" />
+    <path d="M14 30v11.33c0 1.47 1.19 2.67 2.67 2.67h14.67c1.47 0 2.67-1.19 2.67-2.67v-11.33h-20.01z" fill="#00ff00"/>
+  </Svg>
+)
+
+export const BatteryFull = (props) => (
+  <Svg {...props} viewBox="0 0 48 48" transform='rotate(90)'>
+  <path d="M0 0h48v48h-48z" fill="none"/>
+  <path fill="#00ff00" d="M31.33 8h-3.33v-4h-8v4h-3.33c-1.48 0-2.67 1.19-2.67 2.67v30.67c0 1.47 1.19 2.67 2.67 2.67h14.67c1.47 0 2.67-1.19 2.67-2.67v-30.67c-.01-1.48-1.2-2.67-2.68-2.67z"/>
+  </Svg>
+)

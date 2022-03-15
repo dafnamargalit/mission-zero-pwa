@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import styled from 'styled-components';
 import { Logo, Car, BLEConnect, BLEDisconnect, HomeCommand, WorkCommand, SolarCommand, OutageCommand, BackArrow } from '../icons';
 import { motion } from 'framer-motion';
 import ReactModal from 'react-modal';
+import Battery from '../src/Battery';
 
 const Home = () => {
   const [isConnected, setIsConnected] = useState(false);
@@ -16,9 +17,29 @@ const Home = () => {
   const [s, setSolarModal] = useState(false);
   const [w, setWorkModal] = useState(false);
   const [o, setOutageModal] = useState(false);
-  const modalHeight = 1200;
+  const [disabled, setDisabled] = useState(true);
+  const [batteryModal, setBatteryModal] = useState(false);
+  const [battery, setBattery] = useState({ level: 0, charging: false });
+
   const serviceUUID = 0xFFE0;
   const charUUID = 0xFFE1;
+  const handleChange = ({ target: { level, charging } }) => {
+    setBattery({ level, charging });
+ }
+
+ useEffect(() => {
+   let battery;
+   navigator.getBattery().then(bat => {
+     battery = bat;
+     battery.addEventListener("levelchange", handleChange);
+     battery.addEventListener("chargingchange", handleChange);
+     handleChange({ target: battery });
+   });
+   return () => {
+     battery.removeEventListener("levelchange", handleChange);
+     battery.removeEventListener("chargingchange", handleChange);
+   };
+ }, []);
 
   const pairCar = (device) => {
     if (device.gatt.connected && characteristicCache) {
@@ -52,8 +73,21 @@ const Home = () => {
     )
   }
 
+  const resetModal = () => {
+    setHomeModal(false);
+    setWorkModal(false);
+    setSolarModal(false);
+    setOutageModal(false);
+    setDisabled(true);
+  }
+
+
   function handleCharacteristicValueChanged(event) {
     let value = new TextDecoder().decode(event.target.value);
+
+    if (value == "A") {
+      setDisabled(false);
+    }
     setReceived(value);
     setModal(true);
     console.log(value, 'in');
@@ -124,19 +158,21 @@ const Home = () => {
   }
 
   function getDevicesOnClick() {
-    console.log('Getting existing permitted Bluetooth devices...');
+    if (!isConnected) {
+      console.log('Getting existing permitted Bluetooth devices...');
+      navigator.bluetooth.getDevices()
+        .then(devices => {
+          console.log('> Got ' + devices.length + ' Bluetooth devices.');
+          for (const device of devices) {
+            console.log('  > ' + device.name + ' (' + device.id + ')');
+          }
+          setDevices(devices);
+        })
+        .catch(error => {
+          console.log('Argh! ' + error);
+        });
 
-    navigator.bluetooth.getDevices()
-      .then(devices => {
-        console.log('> Got ' + devices.length + ' Bluetooth devices.');
-        for (const device of devices) {
-          console.log('  > ' + device.name + ' (' + device.id + ')');
-        }
-        setDevices(devices)
-      })
-      .catch(error => {
-        console.log('Argh! ' + error);
-      });
+    }
   }
 
   function requestDeviceOnClick() {
@@ -177,14 +213,14 @@ const Home = () => {
 
       {!isConnected && paired_devices.map((car, i) => {
         return (
-          <motion.div key={car.name} whileTap={{ scale: 1.2 }} whileHover={{ scale: 1.1 }}>
+          <div key={i}>
             <CarSelect x={i} carColor={colors[i]} onClick={() => { pairCar(car); }} />
             {console.log(car.name)}
-          </motion.div>
+          </div>
         )
       })}
 
-      {isConnected &&
+      {isConnected && !(h || s || o || w) &&
         <>
           <SendHome onClick={() => { sendCommand('h'); }} />
           <SendWork onClick={() => { sendCommand('w'); }} />
@@ -193,6 +229,10 @@ const Home = () => {
         </>
       }
 
+
+      <BatteryFooter>
+        <Battery {...battery} />
+      </BatteryFooter>
       <ReactModal
         isOpen={receiveModal}
         onRequestClose={closeModal}
@@ -226,29 +266,47 @@ const Home = () => {
       {
         h &&
         <SendModal>
-          <GoBack onClick={() => { setHomeModal(false) }} />
+          <GoBack disabled={disabled} onClick={() => { resetModal() }} />
+          <Header>
+            <Title>{disabled ? "Arrived" : "Going"} Home<Dots show={disabled} /></Title>
+          </Header>
           <HomeCommand height="30vh" />
         </SendModal>
       }
       {
         s &&
         <SendModal>
-          <GoBack onClick={() => { setSolarModal(false) }} />
+          <GoBack disabled={disabled} onClick={() => { resetModal() }} />
+          <Header>
+            <Title>{disabled ? "Arrived" : "Going"} to Solar Charging Station<Dots show={disabled} /></Title>
+          </Header>
           <SolarCommand height="30vh" />
         </SendModal>
       }
       {
         w &&
         <SendModal>
-          <GoBack onClick={() => { setWorkModal(false) }} />
+          <GoBack disabled={disabled} onClick={() => { resetModal() }} />
+          <Header>
+            <Title>{disabled ? "Arrived" : "Going"} to Work<Dots show={disabled} /></Title>
+          </Header>
           <WorkCommand height="30vh" />
         </SendModal>
       }
       {
         o &&
         <SendModal>
-          <GoBack onClick={() => { setOutageModal(false) }} />
+          <GoBack disabled={disabled} onClick={() => { resetModal() }} />
+          <Header>
+            <Title>{disabled ? "Completed" : "Initiating"} Power Outage Sceenario<Dots show={disabled} /></Title>
+          </Header>
           <OutageCommand height="30vh" />
+        </SendModal>
+      }
+      {
+        batteryModal &&
+        <SendModal>
+          <GoBack disabled={true} onClick={() => { resetModal() }} />
         </SendModal>
       }
     </HomeWrap>
@@ -270,6 +328,11 @@ const HomeHeader = styled.div`
   left: 0;
   top: 2vh;
 `
+const BatteryFooter = styled.div`
+  position: absolute;
+  left: 0;
+  top: 10vh;
+`
 
 const Button = styled(Logo)`
   position: absolute;
@@ -289,20 +352,19 @@ const Button = styled(Logo)`
 
 
 const CarSelect = styled(Car)`
-  height: 20vh;
-  position: absolute;
-  height: 10vh;
-  width: 10vh;
-  border-radius: 50%;
-  margin-left: auto;
-  margin-right: auto;
-  left: 0;
-  right: 0;
-  transition: transform .2s;
-  transform: ${x => 'translateY(' + x + ')'};
-  &:hover, &:active{
-    transform: scale(1.05) ${x => 'translateY(' + x + ')'};
-  }
+position: absolute;
+height: 10vh;
+width: 10vh;
+border-radius: 50%;
+margin-left: auto;
+margin-right: auto;
+left: 0;
+right: 0;
+transition: transform .2s;
+transform: translateY(${({ x }) => x == 0 ? "-25vh" : (x == 2 ? "25vh" : 0)}) translateX(${({ x }) => x == 1 ? "-25vh" : (x == 3 ? "25vh" : 0)});
+&:hover, &:active{
+  transform: scale(1.05) translateY(${({ x }) => x == 0 ? "-25vh" : (x == 2 ? "25vh" : 0)}) translateX(${({ x }) => x == 1 ? "-25vh" : (x == 3 ? "25vh" : 0)});
+}
   path {fill: ${({ carColor }) => carColor ? carColor : 'white'};}
 `;
 
@@ -386,7 +448,8 @@ const SendModal = styled.div`
   background-color: black;
   display: flex;
   align-items: center;
-  justify-content: center;
+
+  flex-direction: column;
 `;
 
 const GoBack = styled(BackArrow)`
@@ -396,9 +459,46 @@ const GoBack = styled(BackArrow)`
   top:0;
   padding: 2em;
   transition: transform .2s;
+  pointer-events: ${({ disabled }) => disabled ? "auto" : "none"};
+  path {
+    fill: ${({ disabled }) => disabled ? "white" : "grey"};;
+  }
   &:hover, &:active{
     transform: scale(1.05);
   }
+`;
+
+const Dots = styled.span`
+  &::after {
+    display: ${({ show }) => !show ? "none" : "inline-block"};
+    animation: ellipsis 1.25s infinite;
+    content: ".";
+    width: 1em;
+    text-align: left;
+  }
+  @keyframes ellipsis {
+    0% {
+      content: ".";
+    }
+    33% {
+      content: "..";
+    }
+    66% {
+      content: "...";
+    }
+  }
+`
+
+const Title = styled.div` 
+  color: white;
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  font-size: 20px;
+`;
+
+const Header = styled.div` 
+  display: flex;
+  align-items: center;
+  height: 40vh;
 `;
 const colors = ['red', 'blue', 'green', 'purple'];
 

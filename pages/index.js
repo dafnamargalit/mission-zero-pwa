@@ -5,7 +5,6 @@ import { Logo, Car, Battery, BatteryFull, BLEConnect, BLEDisconnect, HomeCommand
 import { motion } from 'framer-motion';
 import ReactModal from 'react-modal';
 
-
 const Home = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [paired_devices, setDevices] = useState([]);
@@ -19,8 +18,9 @@ const Home = () => {
   const [o, setOutageModal] = useState(false);
   const [disabled, setDisabled] = useState(true);
   const [batteryModal, setBatteryModal] = useState(false);
-  const [battery, setBattery] = useState({ level: 100, charging: false });
-
+  const [battery, setBattery] = useState({ level: 100, charging: false, connected: false, color: "#00ff00" });
+  const [error, setError] = useState({ error: false, msg: '' });
+  const [chargePrompt, setCharge] = useState(false);
   const serviceUUID = 0xFFE0;
   const charUUID = 0xFFE1;
 
@@ -52,6 +52,8 @@ const Home = () => {
       console.log(characteristic, "Notifications started.");
       characteristic.addEventListener('characteristicvaluechanged',
         handleCharacteristicValueChanged);
+      battery.connected = true;
+      setBattery({ ...battery });
     }
     )
   }
@@ -69,12 +71,44 @@ const Home = () => {
   function handleCharacteristicValueChanged(event) {
     let value = new TextDecoder().decode(event.target.value);
 
-    if (value == "A") {
+    console.log(value);
+    if (value == "a") { //arrived
       setDisabled(false);
     }
-    setReceived(value);
-    setModal(true);
-    console.log(value, 'in');
+    else if (value == "ah") {
+      setChargePrompt(true);
+    }
+    else if (value[0] == "e") { //error
+      setError({ error: true, msg: value })
+    }
+    else if (value[0] == "b") { //battery level
+      let batteryVal = parseInt(value.substring(1));
+      battery.level = batteryVal / 100;
+      console.log(value);
+      if (batteryVal <= 5000 && batteryVal > 2500) { //mid battery, turn yellow
+        battery.color = "#FFC633";
+      }
+      else if (batteryVal > 5000) { // high battery, turn green
+        battery.color = "#00ff00";
+      }
+      else if (batteryVal <= 2500) { //low battery, turn red
+        battery.color = "#ff0000";
+      }
+      setBattery({ ...battery });
+    }
+    else if (value[0] == "c") { //charging
+      battery.charging = true;
+      setBattery({ ...battery });
+    }
+    else if (value == "sc") { //stopped charging
+      battery.charging = false;
+      setBattery({ ...battery });
+    }
+    else {
+      setReceived(value);
+      setModal(true);
+      console.log(value, 'in');
+    }
   }
   function disconnect() {
     if (deviceCache) {
@@ -99,6 +133,7 @@ const Home = () => {
 
     setDevice(null);
     setIsConnected(false);
+    setBattery({ level: 100, charging: false, connected: false, color: "#00ff00" });
     setDevices([]);
   }
 
@@ -213,12 +248,12 @@ const Home = () => {
         </>
       }
 
-      {console.log(battery.level)}
-      <BatteryFooter onClick={() => {setBatteryModal(true)}}>
-        {battery.level === 100 ? <BatteryFull height="10vh" /> : <BatteryLevel />}
-      </BatteryFooter>
+      {battery.connected && <BatteryFooter onClick={() => { setBatteryModal(true) }}>
+        <Battery level={battery.level} color={battery.color} height="10vh" />
+      </BatteryFooter>}
+
       <ReactModal
-        isOpen={receiveModal} 
+        isOpen={receiveModal}
         onRequestClose={closeModal}
         ariaHideApp={false}
         contentLabel="Selected Option"
@@ -292,9 +327,12 @@ const Home = () => {
         <SendModal>
           <GoBack disabled={true} onClick={() => { resetModal() }} />
           <Header>
-            <Title>Battery Level</Title>
+            <Title>Car Battery</Title>
           </Header>
-          {battery.level === 100 ? <BatteryFull height="30vh" /> : <Battery height="30vh" />}
+          <Battery color={battery.color} level={battery.level} height="30vh" />
+          <Title>
+            {battery.level}%
+          </Title>
         </SendModal>
       }
     </HomeWrap>
@@ -341,10 +379,7 @@ const Button = styled(Logo)`
   }
 `;
 
-const BatteryLevel = styled(Battery)`
-  height: 10vh;
-  width: 10vh;
-`;
+
 
 const CarSelect = styled(Car)`
 position: absolute;

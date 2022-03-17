@@ -93,11 +93,14 @@ export const BackArrow = (props) => (
   </Svg>
 )
 
-export const Battery = (props) => (
+export const Battery = ({color, level, ...props}) => (
   <Svg {...props} viewBox="0 0 48 48" transform='rotate(90)'>
-    <path d="M0 0h48v48h-48z" />
-    <path d="M34 10.67c0-1.48-1.19-2.67-2.67-2.67h-3.33v-4h-8v4h-3.33c-1.48 0-2.67 1.19-2.67 2.67v19.33h20v-19.33z" fill="#fff" fillOpacity=".3" />
-    <path d="M14 30v11.33c0 1.47 1.19 2.67 2.67 2.67h14.67c1.47 0 2.67-1.19 2.67-2.67v-11.33h-20.01z" fill="#00ff00"/>
+  <path fill="none" d="M0,0h48v48H0V0z"/>
+  <path fillOpacity={0.3} fill="#fff" d="M34,12.5c0-1.9-1.2-3.4-2.7-3.4H28V4h-8v5.1h-3.3c-1.5,0-2.7,1.5-2.7,3.4V37h20V12.5z"/>
+  <path id="test" fill={color} d="M14,37v5.7c0,0.7,1.2,1.3,2.7,1.3h14.7c1.5,0,2.7-0.6,2.7-1.3V37C34,37,14,37,14,37z"/>
+  {color != "#ff0000" && <rect x="14" y="28.7" fill={color} width="20" height="7.1"/>}
+  {color == "#00ff00" && <rect x="14" y="20.4" fill={color} width="20" height="7.1"/>}
+  {color == "#00ff00" && level > 90 && <rect x="14" y="12.2" fill={color} width="20" height="7.1"/>}
   </Svg>
 )
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import styled from 'styled-components';
-import { Logo, Car, Battery, BatteryFull, BLEConnect, BLEDisconnect, HomeCommand, WorkCommand, SolarCommand, OutageCommand, BackArrow } from '../icons';
+import { Logo, Car, Battery, Grid, BLEConnect, BLEDisconnect, HomeCommand, WorkCommand, SolarCommand, OutageCommand, BackArrow } from '../icons';
 import { motion } from 'framer-motion';
 import ReactModal from 'react-modal';
 
@@ -16,9 +16,10 @@ const Home = () => {
   const [s, setSolarModal] = useState(false);
   const [w, setWorkModal] = useState(false);
   const [o, setOutageModal] = useState(false);
+  const [g, setGridModal] = useState(false);
   const [disabled, setDisabled] = useState(true);
   const [batteryModal, setBatteryModal] = useState(false);
-  const [battery, setBattery] = useState({ level: 100, charging: false, connected: false, color: "#00ff00" });
+  const [battery, setBattery] = useState({ actual: 100, simulated: 100, connected: false, color: "#00ff00" });
   const [error, setError] = useState({ error: false, msg: '' });
   const [chargePrompt, setCharge] = useState(false);
   const serviceUUID = 0xFFE0;
@@ -64,6 +65,7 @@ const Home = () => {
     setSolarModal(false);
     setOutageModal(false);
     setBatteryModal(false);
+    setGridModal(false);
     setDisabled(true);
   }
 
@@ -83,8 +85,17 @@ const Home = () => {
     }
     else if (value[0] == "b") { //battery level
       let batteryVal = parseInt(value.substring(1));
-      battery.level = batteryVal / 100;
-      console.log(value);
+      if (battery.actual == null) {
+        battery.actual = batteryVal / 100;
+        setBattery({ ...battery });
+      }
+      else {
+        let diff = battery.actual - batteryVal / 100;
+        if (diff != 0 && diff < 10 && batteryVal >= diff*10) {
+          batteryVal = batteryVal - diff * 10;
+        }
+        battery.simulated = batteryVal / 100;
+      }
       if (batteryVal <= 5000 && batteryVal > 2500) { //mid battery, turn yellow
         battery.color = "#FFC633";
       }
@@ -133,7 +144,7 @@ const Home = () => {
 
     setDevice(null);
     setIsConnected(false);
-    setBattery({ level: 100, charging: false, connected: false, color: "#00ff00" });
+    setBattery({ actual: null, simulated: 100, charging: false, connected: false, color: "#00ff00" });
     setDevices([]);
   }
 
@@ -151,7 +162,9 @@ const Home = () => {
     if (data === 'o') {
       setOutageModal(true);
     }
-
+    if (data === 'g'){
+      setGridModal(true);
+    }
     if (!data || !characteristicCache) {
       return;
     }
@@ -245,11 +258,12 @@ const Home = () => {
           <SendWork onClick={() => { sendCommand('w'); }} />
           <SendSolar onClick={() => { sendCommand('s'); }} />
           <SendOutage onClick={() => { sendCommand('o'); }} />
+          <SendGrid onClick={() => { sendCommand('g'); }} />
         </>
       }
 
       {battery.connected && <BatteryFooter onClick={() => { setBatteryModal(true) }}>
-        <Battery level={battery.level} color={battery.color} height="10vh" />
+        <Battery level={battery.simulated} color={battery.color} height="10vh" />
       </BatteryFooter>}
 
       <ReactModal
@@ -323,15 +337,25 @@ const Home = () => {
         </SendModal>
       }
       {
+        g &&
+        <SendModal>
+          <GoBack disabled={disabled} onClick={() => { resetModal() }} />
+          <Header>
+            <Title>{disabled ? "Initiating" : "Completed"} Grid Simulation<Dots show={disabled} /></Title>
+          </Header>
+          <Grid height="30vh" />
+        </SendModal>
+      }
+      {
         batteryModal &&
         <SendModal>
           <GoBack disabled={true} onClick={() => { resetModal() }} />
           <Header>
             <Title>Car Battery</Title>
           </Header>
-          <Battery color={battery.color} level={battery.level} height="30vh" />
+          <Battery color={battery.color} level={battery.simulated} height="30vh" />
           <Title>
-            {battery.level}%
+            {battery.simulated}%
           </Title>
         </SendModal>
       }
@@ -423,6 +447,22 @@ const SendHome = styled(HomeCommand)`
   }
 `;
 
+const SendGrid = styled(Grid)`
+  position: absolute;
+  height: ${({ customHeight }) => customHeight ? `${customHeight}vh` : "10vh"};
+  width: 10vh;
+  border-radius: 50%;
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
+  right: 0;
+  transition: transform .2s;
+  transform: translateY(-10vh) translateX(22vh);
+  &:hover, &:active{
+    transform: scale(1.05) translateY(-10vh) translateX(22vh);
+  }
+`
+
 const SendWork = styled(WorkCommand)`
   position: absolute;
   height: 10vh;
@@ -433,9 +473,9 @@ const SendWork = styled(WorkCommand)`
   left: 0;
   right: 0;
   transition: transform .2s;
-  transform: translateY(25vh);
+  transform: translateY(15vh) translateX(-22vh);
   &:hover, &:active{
-    transform: scale(1.05) translateY(25vh);
+    transform: scale(1.05) translateY(15vh) translateX(-22vh);
   }
 `;
 
@@ -449,9 +489,9 @@ const SendSolar = styled(SolarCommand)`
   left: 0;
   right: 0;
   transition: transform .2s;
-  transform: translateX(25vh);
+  transform: translateY(15vh) translateX(22vh);
   &:hover, &:active{
-    transform: scale(1.05) translateX(25vh);
+    transform: scale(1.05) translateY(15vh) translateX(22vh);
   }
 `;
 
@@ -465,9 +505,9 @@ const SendOutage = styled(OutageCommand)`
   left: 0;
   right: 0;
   transition: transform .2s;
-  transform: translateX(-25vh);
+  transform: translateY(-10vh) translateX(-22vh);
   &:hover, &:active{
-    transform: scale(1.05) translateX(-25vh);
+    transform: scale(1.05) translateY(-10vh) translateX(-22vh);
   }
 `;
 

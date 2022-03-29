@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import styled from 'styled-components';
-import { Logo, Car, Battery, Grid, BLEConnect, BLEDisconnect, HomeCommand, WorkCommand, SolarCommand, OutageCommand, BackArrow } from '../icons';
+import {
+  Logo, Car, Battery, Grid, BLEConnect, BLEDisconnect,
+  HomeCommand, WorkCommand, SolarCommand, SuperChargeCommand,
+  OutageCommand, BackArrow, ChargeCar, ChargeHome
+} from '../icons';
+import { Descriptions } from '../components/constants';
 import { motion } from 'framer-motion';
 import ReactModal from 'react-modal';
 
@@ -17,13 +22,15 @@ const Home = () => {
   const [w, setWorkModal] = useState(false);
   const [o, setOutageModal] = useState(false);
   const [g, setGridModal] = useState(false);
+  const [c, setSuperChargeModal] = useState(false);
   const [disabled, setDisabled] = useState(true);
   const [batteryModal, setBatteryModal] = useState(false);
-  const [battery, setBattery] = useState({ actual: 100, simulated: 100, connected: false, color: "#00ff00" });
-  const [error, setError] = useState({ error: false, msg: '' });
+  const [battery, setBattery] = useState({ actual: null, simulated: 100, connected: false, color: "#00ff00" });
+  const [lowBattery, setLowBattery] = useState(false);
   const [chargePrompt, setCharge] = useState(false);
   const serviceUUID = 0xFFE0;
   const charUUID = 0xFFE1;
+
 
   const pairCar = (device) => {
     if (device.gatt.connected && characteristicCache) {
@@ -33,6 +40,7 @@ const Home = () => {
 
     device.gatt.connect().then(
       server => {
+        device.addEventListener('gattserverdisconnected', onDisconnected);
         setDevice(device);
         setIsConnected(true);
         console.log("GATT Server connected, finding service...");
@@ -64,51 +72,67 @@ const Home = () => {
     setWorkModal(false);
     setSolarModal(false);
     setOutageModal(false);
-    setBatteryModal(false);
     setGridModal(false);
     setDisabled(true);
+    setSuperChargeModal(false);
   }
 
+  const closeBatteryModal = () => {
+    setBatteryModal(false);
+  }
 
+  function onDisconnected(event) {
+    // Object event.target is Bluetooth Device getting disconnected.
+    setReceived("Bluetooth device disconnected. Please ensure you are within range and check connection.");
+    setModal(true);
+    setIsConnected(false);
+    setDevice(null);
+    setBattery({ actual: null, simulated: 100, charging: false, connected: false, color: "#00ff00" });
+    setDevices([]);
+    console.log('> Bluetooth Device disconnected');
+  }
   function handleCharacteristicValueChanged(event) {
     let value = new TextDecoder().decode(event.target.value);
 
     console.log(value);
-    if (value == "a") { //arrived
+    if (value[0] == "a") { //arrived
       setDisabled(false);
     }
-    else if (value == "ah") {
-      setChargePrompt(true);
-    }
     else if (value[0] == "e") { //error
-      setError({ error: true, msg: value })
+      setReceived("Error: ", value);
+      setModal(true);
     }
     else if (value[0] == "b") { //battery level
       let batteryVal = parseInt(value.substring(1));
       if (battery.actual == null) {
         battery.actual = batteryVal / 100;
         setBattery({ ...battery });
+        console.log(battery.actual)
       }
       else {
         let diff = battery.actual - batteryVal / 100;
-        if (diff != 0 && diff < 10 && batteryVal >= diff*10) {
-          batteryVal = batteryVal - diff * 10;
-        }
+        console.log(battery.actual, battery.simulated, diff);
+        battery.actual = batteryVal / 100;
         battery.simulated = batteryVal / 100;
+        if (diff > 0) {
+          battery.simulated = (batteryVal / 100) - diff * 10;
+        }
       }
-      if (batteryVal <= 5000 && batteryVal > 2500) { //mid battery, turn yellow
+      if (battery.simulated <= 50 && battery.simulated > 25) { //mid battery, turn yellow
         battery.color = "#FFC633";
       }
-      else if (batteryVal > 5000) { // high battery, turn green
+      else if (battery.simulated > 50) { // high battery, turn green
         battery.color = "#00ff00";
       }
-      else if (batteryVal <= 2500) { //low battery, turn red
+      else if (battery.simulated <= 25) { //low battery, turn red
         battery.color = "#ff0000";
+        setLowBattery(true);
       }
       setBattery({ ...battery });
     }
     else if (value[0] == "c") { //charging
       battery.charging = true;
+      setLowBattery(false);
       setBattery({ ...battery });
     }
     else if (value == "sc") { //stopped charging
@@ -149,44 +173,53 @@ const Home = () => {
   }
 
   const sendCommand = (data) => {
-    data = String(data);
-    if (data === 'h') {
-      setHomeModal(true);
-    }
-    if (data === 's') {
-      setSolarModal(true);
-    }
-    if (data === 'w') {
-      setWorkModal(true);
-    }
-    if (data === 'o') {
-      setOutageModal(true);
-    }
-    if (data === 'g'){
-      setGridModal(true);
-    }
-    if (!data || !characteristicCache) {
-      return;
-    }
-
-    data += '\n';
-
-    if (data.length > 20) {
-      let chunks = data.match(/(.|[\r\n]){1,20}/g);
-
-      writeToCharacteristic(characteristicCache, chunks[0]);
-
-      for (let i = 1; i < chunks.length; i++) {
-        setTimeout(() => {
-          writeToCharacteristic(characteristicCache, chunks[i]);
-        }, i * 100);
-      }
+    if (deviceCache && !deviceCache.gatt.connected) {
+      setReceived("Bluetooth device disconnected. Please ensure you are within range and check connection.");
+      setModal(true);
+      setIsConnected(false);
     }
     else {
-      characteristicCache.writeValue(new TextEncoder().encode(data))
+      data = String(data);
+      if (data === 'h') {
+        setHomeModal(true);
+      }
+      if (data === 's') {
+        setSolarModal(true);
+      }
+      if (data === 'w') {
+        setWorkModal(true);
+      }
+      if (data === 'o') {
+        setOutageModal(true);
+      }
+      if (data === 'g') {
+        setGridModal(true);
+      }
+      if (data === 'c') {
+        setSuperChargeModal(true);
+      }
+      if (!data || !characteristicCache) {
+        return;
+      }
+
+      data += '\n';
+
+      if (data.length > 20) {
+        let chunks = data.match(/(.|[\r\n]){1,20}/g);
+
+        writeToCharacteristic(characteristicCache, chunks[0]);
+
+        for (let i = 1; i < chunks.length; i++) {
+          setTimeout(() => {
+            writeToCharacteristic(characteristicCache, chunks[i]);
+          }, i * 100);
+        }
+      }
+      else {
+        characteristicCache.writeValue(new TextEncoder().encode(data))
+      }
+
     }
-
-
   }
 
   function getDevicesOnClick() {
@@ -195,6 +228,10 @@ const Home = () => {
       navigator.bluetooth.getDevices()
         .then(devices => {
           console.log('> Got ' + devices.length + ' Bluetooth devices.');
+          if (devices.length == 0) {
+            setReceived("No Bluetooth devices connected. Please Pair using the Bluetooth Icon on the top left of the screen.");
+            setModal(true);
+          }
           for (const device of devices) {
             console.log('  > ' + device.name + ' (' + device.id + ')');
           }
@@ -259,6 +296,7 @@ const Home = () => {
           <SendSolar onClick={() => { sendCommand('s'); }} />
           <SendOutage onClick={() => { sendCommand('o'); }} />
           <SendGrid onClick={() => { sendCommand('g'); }} />
+          <SendSuperCharge onClick={() => { sendCommand('c'); }} />
         </>
       }
 
@@ -293,7 +331,7 @@ const Home = () => {
         }
         }
       >
-        Received Data: {receivedData}
+        {receivedData}
       </ReactModal>
 
       {
@@ -303,7 +341,10 @@ const Home = () => {
           <Header>
             <Title>{disabled ? "Going" : "Arrived"} Home<Dots show={disabled} /></Title>
           </Header>
-          <HomeCommand height="30vh" />
+          <HomeCommand height="20vh" />
+          <Description>
+            {Descriptions.home}
+          </Description>
         </SendModal>
       }
       {
@@ -311,9 +352,12 @@ const Home = () => {
         <SendModal>
           <GoBack disabled={disabled} onClick={() => { resetModal() }} />
           <Header>
-            <Title>{disabled ? "Going" : "Arrived"} to Solar Charging Station<Dots show={disabled} /></Title>
+            <Title>{disabled ? "Going to" : "Arrived at"} Solar Charging Station<Dots show={disabled} /></Title>
           </Header>
-          <SolarCommand height="30vh" />
+          <SolarCommand height="20vh" />
+          <Description>
+            {Descriptions.solar}
+          </Description>
         </SendModal>
       }
       {
@@ -321,9 +365,12 @@ const Home = () => {
         <SendModal>
           <GoBack disabled={disabled} onClick={() => { resetModal() }} />
           <Header>
-            <Title>{disabled ? "Going" : "Arrived"} to Work<Dots show={disabled} /></Title>
+            <Title>{disabled ? "Going to" : "Arrived at"} Work<Dots show={disabled} /></Title>
           </Header>
-          <WorkCommand height="30vh" />
+          <WorkCommand height="20vh" />
+          <Description>
+            {Descriptions.work}
+          </Description>
         </SendModal>
       }
       {
@@ -333,7 +380,10 @@ const Home = () => {
           <Header>
             <Title>{disabled ? "Initiating" : "Completed"} Power Outage Scenario<Dots show={disabled} /></Title>
           </Header>
-          <OutageCommand height="30vh" />
+          <OutageCommand height="20vh" />
+          <Description>
+            {Descriptions.outage}
+          </Description>
         </SendModal>
       }
       {
@@ -343,15 +393,46 @@ const Home = () => {
           <Header>
             <Title>{disabled ? "Initiating" : "Completed"} Grid Simulation<Dots show={disabled} /></Title>
           </Header>
-          <Grid height="30vh" />
+          <Grid height="20vh" />
+          <Description>
+            {Descriptions.grid}
+          </Description>
+        </SendModal>
+      }
+      {
+        c &&
+        <SendModal>
+          <GoBack disabled={disabled} onClick={() => { resetModal() }} />
+          <Header>
+            <Title>{disabled ? "Going to" : "Arrived at"} Super Charge Station<Dots show={disabled} /></Title>
+          </Header>
+          <SuperChargeCommand height="20vh" />
+          <Description>
+            {Descriptions.super}
+          </Description>
         </SendModal>
       }
       {
         batteryModal &&
         <SendModal>
-          <GoBack disabled={true} onClick={() => { resetModal() }} />
+          <GoBack disabled={true} onClick={() => { closeBatteryModal() }} />
           <Header>
             <Title>Car Battery</Title>
+          </Header>
+          <Battery color={battery.color} level={battery.simulated} height="20vh" />
+          <Title>
+            {battery.simulated}%
+          </Title>
+          <Description>
+            {Descriptions.battery}
+          </Description>
+        </SendModal>
+      }
+      {
+        lowBattery &&
+        <SendModal>
+          <Header>
+            <Title>ALERT! Car has Low Battery</Title>
           </Header>
           <Battery color={battery.color} level={battery.simulated} height="30vh" />
           <Title>
@@ -380,6 +461,7 @@ const HomeHeader = styled.div`
 `
 const BatteryFooter = styled.div`
   position: absolute;
+  z-index: 1000;
   right: 2vh;
   top: 1vh;
   &:hover, &:active{
@@ -511,6 +593,21 @@ const SendOutage = styled(OutageCommand)`
   }
 `;
 
+const SendSuperCharge = styled(SuperChargeCommand)`
+  position: absolute;
+  height: 10vh;
+  width: 10vh;
+  border-radius: 50%;
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
+  right: 0;
+  transition: transform .2s;
+  transform: translateY(25vh);
+  &:hover, &:active{
+    transform: scale(1.05) translateY(25vh);
+  }
+`;
 const SendModal = styled.div` 
   position: absolute;
   height: 100vh;
@@ -569,6 +666,17 @@ const Header = styled.div`
   display: flex;
   align-items: center;
   height: 30vh;
+`;
+
+const Description = styled.div`
+  display: flex;
+  align-items: center;
+  color: white;
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  font-size: 20px;
+  padding: 10vh;
+  max-width: 700px;
+  text-align: center;
 `;
 const colors = ['red', 'blue', 'green', 'purple'];
 

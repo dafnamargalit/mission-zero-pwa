@@ -24,3 +24,5 @@ export const CommandIcons = [
   { name: "battery", src: Battery }
 
 ];
+
+export const CarColors = ['red', 'blue', 'green', 'purple'];

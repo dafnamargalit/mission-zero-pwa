@@ -4,110 +4,125 @@ import styled from 'styled-components';
 import {
   Logo, Car, Battery, Grid, BLEConnect, BLEDisconnect,
   HomeCommand, WorkCommand, SolarCommand, SuperChargeCommand,
-  OutageCommand, BackArrow, ChargeCar, ChargeHome
+  OutageCommand
 } from '../icons';
-import { Descriptions } from '../components/constants';
+import { Descriptions, CarColors } from '../components/constants';
 import { motion } from 'framer-motion';
 import ReactModal from 'react-modal';
 import SendScreen from '../src/SendScreen';
 
-const Home = () => {
-  const [isConnected, setIsConnected] = useState(false);
-  const [paired_devices, setDevices] = useState([]);
-  const [characteristicCache, setCharacteristic] = useState(null);
-  const [receivedData, setReceived] = useState(null);
-  const [receiveModal, setModal] = useState(false);
-  const [deviceCache, setDevice] = useState(null);
-  const [h, setHomeModal] = useState(false);
-  const [s, setSolarModal] = useState(false);
-  const [w, setWorkModal] = useState(false);
-  const [o, setOutageModal] = useState(false);
-  const [g, setGridModal] = useState(false);
-  const [c, setSuperChargeModal] = useState(false);
-  const [disabled, setDisabled] = useState(true);
-  const [batteryModal, setBatteryModal] = useState(false);
-  const [battery, setBattery] = useState({ actual: null, simulated: 100, connected: false, color: "#00ff00" });
-  const [lowBattery, setLowBattery] = useState(false);
-  const [chargePrompt, setCharge] = useState(false);
-  const serviceUUID = 0xFFE0;
-  const charUUID = 0xFFE1;
+export default class Home extends React.Component {
 
+  constructor(props) {
+    super(props);
+    this.state = {
+      isConnected: false,
+      paired_devices: [],
+      characteristicCache: null,
+      receivedData: null,
+      receiveModal: false,
+      deviceCache: null,
+      h: false,
+      s: false,
+      w: false,
+      o: false,
+      g: false,
+      c: false,
+      disabled: true,
+      batteryModal: false,
+      battery: { actual: null, simulated: 100, connected: false, color: "#00ff00" },
+      lowBattery: false,
+      chargePrompt: false,
+      serviceUUID: 0xFFE0,
+      charUUID: 0xFFE1,
+      inactive: false
+    }
+  }
 
-  const pairCar = (device) => {
-    if (device.gatt.connected && characteristicCache) {
+  pairCar = (device) => {
+    if (device.gatt.connected && this.state.characteristicCache) {
       console.log("Already Connected.");
       return;
     }
 
     device.gatt.connect().then(
       server => {
-        device.addEventListener('gattserverdisconnected', onDisconnected);
-        setDevice(device);
-        setIsConnected(true);
+        device.addEventListener('gattserverdisconnected', this.onDisconnected);
+        this.setState({ deviceCache: device, isConnected: true });
         console.log("GATT Server connected, finding service...");
-        return server.getPrimaryService(serviceUUID);
+        return server.getPrimaryService(this.state.serviceUUID);
       }
     ).then(
       service => {
         console.log("Found service, finding characteristic...");
-        return service.getCharacteristic(charUUID);
+        return service.getCharacteristic(this.state.charUUID);
       }
     ).then(
       characteristic => {
         console.log("Found characteristic, starting notifications...");
-        setCharacteristic(characteristic);
+        this.setState({ characteristicCache: characteristic });
         return characteristic.startNotifications();
       }
     ).then(characteristic => {
       console.log(characteristic, "Notifications started.");
       characteristic.addEventListener('characteristicvaluechanged',
-        handleCharacteristicValueChanged);
+        this.handleCharacteristicValueChanged);
+      let battery = { ...this.state.battery };
       battery.connected = true;
-      setBattery({ ...battery });
+      this.setState({ battery: battery });
     }
     )
   }
 
-  const resetModal = () => {
-    setHomeModal(false);
-    setWorkModal(false);
-    setSolarModal(false);
-    setOutageModal(false);
-    setGridModal(false);
-    setDisabled(true);
-    setSuperChargeModal(false);
+  resetModal = () => {
+    this.setState({
+      h: false,
+      w: false,
+      s: false,
+      o: false,
+      g: false,
+      c: false,
+      disabled: true,
+    });
   }
 
-  const closeBatteryModal = () => {
-    setBatteryModal(false);
+  closeBatteryModal = () => {
+    this.setState({
+      batteryModal: false,
+    })
   }
 
-  function onDisconnected(event) {
+  onDisconnected = (event) => {
     // Object event.target is Bluetooth Device getting disconnected.
-    setReceived("Bluetooth device disconnected. Please ensure you are within range and check connection.");
-    setModal(true);
-    setIsConnected(false);
-    setDevice(null);
-    setBattery({ actual: null, simulated: 100, charging: false, connected: false, color: "#00ff00" });
-    setDevices([]);
+    this.setState({
+      receivedData: "Bluetooth device disconnected. Please ensure you are within range and check connection.",
+      receiveModal: true,
+      isConnected: false,
+      deviceCache: null,
+      characteristicCache: null,
+      battery: { actual: null, simulated: 100, charging: false, connected: false, color: "#00ff00" },
+      devices: [],
+    })
     console.log('> Bluetooth Device disconnected');
   }
-  function handleCharacteristicValueChanged(event) {
+  handleCharacteristicValueChanged = (event) => {
     let value = new TextDecoder().decode(event.target.value);
-
+    let battery = { ...this.state.battery };
     console.log(value);
     if (value[0] == "a") { //arrived
-      setDisabled(false);
+      this.setState({ disabled: false })
     }
     else if (value[0] == "e") { //error
-      setReceived("Error: ", value);
-      setModal(true);
+      this.setState({
+        receiveModal: true,
+        receivedData: "Error: " + value.substring(1),
+      })
     }
     else if (value[0] == "b") { //battery level
       let batteryVal = parseInt(value.substring(1));
       if (battery.actual == null) {
         battery.actual = batteryVal / 100;
-        setBattery({ ...battery });
+        this.setState({ battery: battery });
         console.log(battery.actual)
       }
       else {
@@ -127,26 +142,37 @@ const Home = () => {
       }
       else if (battery.simulated <= 25) { //low battery, turn red
         battery.color = "#ff0000";
-        setLowBattery(true);
+        this.setState({
+          lowBattery: true
+        })
       }
-      setBattery({ ...battery });
+      this.setState({
+        battery: battery
+      })
     }
     else if (value[0] == "c") { //charging
       battery.charging = true;
-      setLowBattery(false);
-      setBattery({ ...battery });
+      this.setState({
+        battery: battery,
+        lowBattery: false
+      })
     }
     else if (value == "sc") { //stopped charging
       battery.charging = false;
-      setBattery({ ...battery });
+      this.setState({
+        battery: battery
+      })
     }
     else {
-      setReceived(value);
-      setModal(true);
+      this.setState({
+        receivedData: value,
+        receiveModal: true,
+      })
       console.log(value, 'in');
     }
   }
-  function disconnect() {
+  disconnect = () => {
+    const {deviceCache, characteristicCache} = this.state;
     if (deviceCache) {
       console.log('Disconnecting from "' + deviceCache.name + '" bluetooth device...');
 
@@ -162,42 +188,61 @@ const Home = () => {
 
     if (characteristicCache) {
       characteristicCache.removeEventListener('characteristicvaluechanged',
-        handleCharacteristicValueChanged);
-      setCharacteristic(null);
+        this.handleCharacteristicValueChanged);
+      this.setState({
+        characteristicCache: null,
+      })
     }
 
-
-    setDevice(null);
-    setIsConnected(false);
-    setBattery({ actual: null, simulated: 100, charging: false, connected: false, color: "#00ff00" });
-    setDevices([]);
+    this.setState({
+      isConnected: false,
+      deviceCache: null,
+      battery: { actual: null, simulated: 100, charging: false, connected: false, color: "#00ff00" },
+      devices: [],
+    });
   }
 
-  const sendCommand = (data) => {
+  sendCommand = (data) => {
+    const {deviceCache, characteristicCache} = this.state;
+
     if (deviceCache && !deviceCache.gatt.connected) {
-      setReceived("Bluetooth device disconnected. Please ensure you are within range and check connection.");
-      setModal(true);
-      setIsConnected(false);
+      this.setState({
+        receiveModal: true,
+        receivedData: "Bluetooth device is not connected. Please ensure you are within range and check connection.",
+        isConnected: false,
+      });
     }
     else {
       data = String(data);
       if (data === 'h') {
-        setHomeModal(true);
+        this.setState({
+          h: true,
+        });
       }
       if (data === 's') {
-        setSolarModal(true);
+        this.setState({
+          s: true,
+        });
       }
       if (data === 'w') {
-        setWorkModal(true);
+        this.setState({
+          w: true,
+        });
       }
       if (data === 'o') {
-        setOutageModal(true);
+        this.setState({
+          o: true,
+        });
       }
       if (data === 'g') {
-        setGridModal(true);
+        this.setState({
+          g: true,
+        });
       }
       if (data === 'c') {
-        setSuperChargeModal(true);
+        this.setState({
+          c: true,
+        });
       }
       if (!data || !characteristicCache) {
         return;
@@ -223,20 +268,24 @@ const Home = () => {
     }
   }
 
-  function getDevicesOnClick() {
-    if (!isConnected) {
+  getDevicesOnClick = () => {
+    if (!this.state.isConnected) {
       console.log('Getting existing permitted Bluetooth devices...');
       navigator.bluetooth.getDevices()
         .then(devices => {
           console.log('> Got ' + devices.length + ' Bluetooth devices.');
           if (devices.length == 0) {
-            setReceived("No Bluetooth devices connected. Please Pair using the Bluetooth Icon on the top left of the screen.");
-            setModal(true);
+            this.setState({
+              receiveModal: true,
+              receivedData: "No Bluetooth devices found. Please ensure you are within range and check connection.",
+            });
           }
           for (const device of devices) {
             console.log('  > ' + device.name + ' (' + device.id + ')');
           }
-          setDevices(devices);
+          this.setState({
+            paired_devices: devices,
+          })
         })
         .catch(error => {
           console.log('Argh! ' + error);
@@ -245,10 +294,10 @@ const Home = () => {
     }
   }
 
-  function requestDeviceOnClick() {
+  requestDeviceOnClick = () => {
     console.log('Requesting any Bluetooth device...');
     navigator.bluetooth.requestDevice({
-      filters: [{ services: [serviceUUID] }]
+      filters: [{ services: [this.state.serviceUUID] }]
     })
       .then(device => {
         console.log('> Requested ' + device.name + ' (' + device.id + ')');
@@ -257,119 +306,125 @@ const Home = () => {
       });
   }
 
-  const closeModal = () => {
-    setModal(false);
+  closeModal = () => {
+    this.setState({
+      receiveModal: false,
+    })
   };
 
+  render() {
+    const { isConnected, paired_devices, battery,
+      lowBattery, receiveModal, receivedData,
+      disabled, h, w, o, s, g, c, batteryModal } = this.state;
+    return (
+      <HomeWrap>
+        <Head>
+          <title>EVEE</title>
+          <meta name="description" content="Generated by create next app" />
+          <meta name="theme-color" content="#000" />
+          <link rel="manifest" href="/manifest.json" />
+          <link rel="icon" href="/icon-192x192.png" />
+          <link rel="apple-touch-icon" href="/icon-192x192.png" />
+        </Head>
+        <HomeHeader>
+          <motion.div whileTap={{ scale: 1.2 }} whileHover={{ scale: 1.1 }}>
+            {!isConnected ? <BLEConnectIcon onClick={() => { this.requestDeviceOnClick(); }} />
+              : <BLEDisconnectIcon onClick={() => { this.disconnect(); }} />}
+          </motion.div>
+        </HomeHeader>
 
-  return (
-    <HomeWrap>
-      <Head>
-        <title>EVEE</title>
-        <meta name="description" content="Generated by create next app" />
-        <meta name="theme-color" content="#000" />
-        <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" href="/icon-192x192.png" />
-        <link rel="apple-touch-icon" href="/icon-192x192.png" />
-      </Head>
-      <HomeHeader>
-        <motion.div whileTap={{ scale: 1.2 }} whileHover={{ scale: 1.1 }}>
-          {!isConnected ? <BLEConnectIcon onClick={() => { requestDeviceOnClick(); }} />
-            : <BLEDisconnectIcon onClick={() => { disconnect(); }} />}
-        </motion.div>
-      </HomeHeader>
+        <Button onClick={() => { this.getDevicesOnClick(); }} />
 
-      <Button onClick={() => { getDevicesOnClick(); }} />
+        {!isConnected && paired_devices.map((car, i) => {
+          return (
+            <div key={i}>
+              <CarSelect x={i} carColor={CarColors[i]} onClick={() => { this.pairCar(car); }} />
+            </div>
+          )
+        })}
 
-      {!isConnected && paired_devices.map((car, i) => {
-        return (
-          <div key={i}>
-            <CarSelect x={i} carColor={colors[i]} onClick={() => { pairCar(car); }} />
-          </div>
-        )
-      })}
+        {isConnected &&
+          <>
+            <SendHome onClick={() => { this.sendCommand('h'); }} />
+            <SendWork onClick={() => { this.sendCommand('w'); }} />
+            <SendSolar onClick={() => { this.sendCommand('s'); }} />
+            <SendOutage onClick={() => { this.sendCommand('o'); }} />
+            <SendGrid onClick={() => { this.sendCommand('g'); }} />
+            <SendSuperCharge onClick={() => { this.sendCommand('c'); }} />
+          </>
+        }
 
-      {isConnected &&
-        <>
-          <SendHome onClick={() => { sendCommand('h'); }} />
-          <SendWork onClick={() => { sendCommand('w'); }} />
-          <SendSolar onClick={() => { sendCommand('s'); }} />
-          <SendOutage onClick={() => { sendCommand('o'); }} />
-          <SendGrid onClick={() => { sendCommand('g'); }} />
-          <SendSuperCharge onClick={() => { sendCommand('c'); }} />
-        </>
-      }
+        {battery.connected && <BatteryFooter onClick={() => { this.setState({ batteryModal: true }) }}>
+          <Battery level={battery.simulated} color={battery.color} height="10vh" />
+        </BatteryFooter>}
 
-      {battery.connected && <BatteryFooter onClick={() => { setBatteryModal(true) }}>
-        <Battery level={battery.simulated} color={battery.color} height="10vh" />
-      </BatteryFooter>}
-
-      <ReactModal
-        isOpen={receiveModal}
-        onRequestClose={closeModal}
-        ariaHideApp={false}
-        contentLabel="Selected Option"
-        style={{
-          overlay: {
-            backgroundColor: 'rgba(0,0,0,0.3)'
-          },
-          content: {
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'white',
-            border: 'none',
-            borderRadius: '1em',
-            height: '60vh',
-            width: '80vh',
-            left: '50%',
-            top: '50%',
-            right: '0',
-            bottom: '0',
-            transform: 'translate(-50%, -50%)'
+        <ReactModal
+          isOpen={receiveModal}
+          onRequestClose={this.closeModal}
+          ariaHideApp={false}
+          contentLabel="Selected Option"
+          style={{
+            overlay: {
+              backgroundColor: 'rgba(0,0,0,0.3)'
+            },
+            content: {
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'white',
+              border: 'none',
+              borderRadius: '1em',
+              height: '60vh',
+              width: '80vh',
+              left: '50%',
+              top: '50%',
+              right: '0',
+              bottom: '0',
+              transform: 'translate(-50%, -50%)'
+            }
           }
-        }
-        }
-      >
-        {receivedData}
-      </ReactModal>
+          }
+        >
+          {receivedData}
+        </ReactModal>
 
-      <SendScreen show={h} command="home" disabled={disabled}
-        resetModal={() => { resetModal() }} name="Home"
-        description={Descriptions.home} await="Going" done="Arrived" />
-      <SendScreen show={s} command="solar" disabled={disabled}
-        resetModal={() => { resetModal() }} name="Solar Charging Station"
-        description={Descriptions.solar} await="Going to" done="Arrived at" />
-      <SendScreen show={w} command="work" disabled={disabled}
-        resetModal={() => { resetModal() }} name="Work"
-        description={Descriptions.work} await="Going to" done="Arrived at" />
-      <SendScreen show={o} command="outage" disabled={disabled}
-        resetModal={() => { resetModal() }} name="Power Outage Scenario"
-        description={Descriptions.outage} await="Initiating" done="Completed" />
-      <SendScreen show={g} command="grid" disabled={disabled}
-        resetModal={() => { resetModal() }} name="Grid Simulation"
-        description={Descriptions.grid} await="Initiating" done="Completed" />
-      <SendScreen show={c} command="super" disabled={disabled}
-        resetModal={() => { resetModal() }} name="Super Charging Station"
-        description={Descriptions.super} await="Going to" done="Arrived at" />
-      <SendScreen show={batteryModal} command="battery" disabled={disabled}
-        resetModal={() => { closeBatteryModal() }}
-        name="Car Battery" color={battery.color} level={battery.simulated}
-        description={Descriptions.battery} />
-      {
-        lowBattery &&
-        <SendModal>
-          <Header>
-            <Title>ALERT! Car has Low Battery</Title>
-          </Header>
-          <Battery color={battery.color} level={battery.simulated} height="30vh" />
-          <Title>
-            {battery.simulated}%
-          </Title>
-        </SendModal>
-      }
-    </HomeWrap>
-  )
+        <SendScreen show={h} command="home" disabled={disabled}
+          resetModal={() => { this.resetModal() }} name="Home"
+          description={Descriptions.home} await="Going" done="Arrived" />
+        <SendScreen show={s} command="solar" disabled={disabled}
+          resetModal={() => { this.resetModal() }} name="Solar Charging Station"
+          description={Descriptions.solar} await="Going to" done="Arrived at" />
+        <SendScreen show={w} command="work" disabled={disabled}
+          resetModal={() => { this.resetModal() }} name="Work"
+          description={Descriptions.work} await="Going to" done="Arrived at" />
+        <SendScreen show={o} command="outage" disabled={disabled}
+          resetModal={() => { this.resetModal() }} name="Power Outage Scenario"
+          description={Descriptions.outage} await="Initiating" done="Completed" />
+        <SendScreen show={g} command="grid" disabled={disabled}
+          resetModal={() => { this.resetModal() }} name="Grid Simulation"
+          description={Descriptions.grid} await="Initiating" done="Completed" />
+        <SendScreen show={c} command="super" disabled={disabled}
+          resetModal={() => { this.resetModal() }} name="Super Charging Station"
+          description={Descriptions.super} await="Going to" done="Arrived at" />
+        <SendScreen show={batteryModal} command="battery" disabled={disabled}
+          resetModal={() => { this.closeBatteryModal() }}
+          name="Car Battery" color={battery.color} level={battery.simulated}
+          description={Descriptions.battery} />
+        {
+          lowBattery &&
+          <SendModal>
+            <Header>
+              <Title>ALERT! Car has Low Battery</Title>
+            </Header>
+            <Battery color={battery.color} level={battery.simulated} height="30vh" />
+            <Title>
+              {battery.simulated}%
+            </Title>
+          </SendModal>
+        }
+      </HomeWrap>
+    )
+  }
 }
 
 const HomeWrap = styled.div`
@@ -559,8 +614,4 @@ const Header = styled.div`
   height: 30vh;
 `;
 
-const colors = ['red', 'blue', 'green', 'purple'];
 
-
-
-export default Home;

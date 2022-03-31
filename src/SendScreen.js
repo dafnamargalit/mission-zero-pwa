@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import styled from 'styled-components';
 import {
     BackArrow
@@ -6,8 +6,33 @@ import {
 import { CommandIcons } from '../components/constants';
 
 function SendScreen(props) {
+
     if (props.show) {
         const srcIcon = CommandIcons.find(icon => icon.name === props.command);
+        let timeout = null;
+
+        useEffect(() => {
+            if(!disabled){
+                restartAutoReset();
+
+                window.addEventListener('mousemove', onMouseMove);
+                window.addEventListener('touchstart', onMouseMove);
+            }
+        });
+
+        const onMouseMove = () => {
+            restartAutoReset();
+          };
+
+        const restartAutoReset = () => {
+            if (timeout) {
+              clearTimeout(timeout);
+            }
+            timeout = setTimeout(() => {
+              props.resetModal();
+            }, 1000 * 5); // 60 Seconds
+          };
+
         return (
             <SendWrapper>
                 <GoBack disabled={props.disabled} onClick={() => { props.resetModal() }} />
@@ -19,13 +44,13 @@ function SendScreen(props) {
                         :
                         <Title>{props.disabled ? props.await : props.done} {props.name}<Dots show={props.disabled} /></Title>}
                 </Header>
-                
+
                 {props.command === "battery" ?
                     <>
-                    <srcIcon.src height="20vh" color={props.color} level={props.level}/>
-                    <Title>
-                        {Math.round(props.level*10)/10}%
-                    </Title>
+                        <srcIcon.src height="20vh" color={props.color} level={props.level} />
+                        <Title>
+                            {Math.round(props.level * 10) / 10}%
+                        </Title>
                     </>
                     :
                     <srcIcon.src height="20vh" />

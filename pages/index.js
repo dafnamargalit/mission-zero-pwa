@@ -9,6 +9,7 @@ import {
 import { Descriptions } from '../components/constants';
 import { motion } from 'framer-motion';
 import ReactModal from 'react-modal';
+import SendScreen from '../src/SendScreen';
 
 const Home = () => {
   const [isConnected, setIsConnected] = useState(false);
@@ -284,12 +285,11 @@ const Home = () => {
         return (
           <div key={i}>
             <CarSelect x={i} carColor={colors[i]} onClick={() => { pairCar(car); }} />
-            {console.log(car.name)}
           </div>
         )
       })}
 
-      {isConnected && !(h || s || o || w) &&
+      {isConnected &&
         <>
           <SendHome onClick={() => { sendCommand('h'); }} />
           <SendWork onClick={() => { sendCommand('w'); }} />
@@ -334,100 +334,28 @@ const Home = () => {
         {receivedData}
       </ReactModal>
 
-      {
-        h &&
-        <SendModal>
-          <GoBack disabled={disabled} onClick={() => { resetModal() }} />
-          <Header>
-            <Title>{disabled ? "Going" : "Arrived"} Home<Dots show={disabled} /></Title>
-          </Header>
-          <HomeCommand height="20vh" />
-          <Description>
-            {Descriptions.home}
-          </Description>
-        </SendModal>
-      }
-      {
-        s &&
-        <SendModal>
-          <GoBack disabled={disabled} onClick={() => { resetModal() }} />
-          <Header>
-            <Title>{disabled ? "Going to" : "Arrived at"} Solar Charging Station<Dots show={disabled} /></Title>
-          </Header>
-          <SolarCommand height="20vh" />
-          <Description>
-            {Descriptions.solar}
-          </Description>
-        </SendModal>
-      }
-      {
-        w &&
-        <SendModal>
-          <GoBack disabled={disabled} onClick={() => { resetModal() }} />
-          <Header>
-            <Title>{disabled ? "Going to" : "Arrived at"} Work<Dots show={disabled} /></Title>
-          </Header>
-          <WorkCommand height="20vh" />
-          <Description>
-            {Descriptions.work}
-          </Description>
-        </SendModal>
-      }
-      {
-        o &&
-        <SendModal>
-          <GoBack disabled={disabled} onClick={() => { resetModal() }} />
-          <Header>
-            <Title>{disabled ? "Initiating" : "Completed"} Power Outage Scenario<Dots show={disabled} /></Title>
-          </Header>
-          <OutageCommand height="20vh" />
-          <Description>
-            {Descriptions.outage}
-          </Description>
-        </SendModal>
-      }
-      {
-        g &&
-        <SendModal>
-          <GoBack disabled={disabled} onClick={() => { resetModal() }} />
-          <Header>
-            <Title>{disabled ? "Initiating" : "Completed"} Grid Simulation<Dots show={disabled} /></Title>
-          </Header>
-          <Grid height="20vh" />
-          <Description>
-            {Descriptions.grid}
-          </Description>
-        </SendModal>
-      }
-      {
-        c &&
-        <SendModal>
-          <GoBack disabled={disabled} onClick={() => { resetModal() }} />
-          <Header>
-            <Title>{disabled ? "Going to" : "Arrived at"} Super Charge Station<Dots show={disabled} /></Title>
-          </Header>
-          <SuperChargeCommand height="20vh" />
-          <Description>
-            {Descriptions.super}
-          </Description>
-        </SendModal>
-      }
-      {
-        batteryModal &&
-        <SendModal>
-          <GoBack disabled={true} onClick={() => { closeBatteryModal() }} />
-          <Header>
-            <Title>Car Battery</Title>
-          </Header>
-          <Battery color={battery.color} level={battery.simulated} height="20vh" />
-          <Title>
-            {Math.round(battery.simulated*10)/10}%
-          </Title>
-          <Description>
-            {Descriptions.battery}
-          </Description>
-        </SendModal>
-      }
+      <SendScreen show={h} command="home" disabled={disabled}
+        resetModal={() => { resetModal() }} name="Home"
+        description={Descriptions.home} await="Going" done="Arrived" />
+      <SendScreen show={s} command="solar" disabled={disabled}
+        resetModal={() => { resetModal() }} name="Solar Charging Station"
+        description={Descriptions.solar} await="Going to" done="Arrived at" />
+      <SendScreen show={w} command="work" disabled={disabled}
+        resetModal={() => { resetModal() }} name="Work"
+        description={Descriptions.work} await="Going to" done="Arrived at" />
+      <SendScreen show={o} command="outage" disabled={disabled}
+        resetModal={() => { resetModal() }} name="Power Outage Scenario"
+        description={Descriptions.outage} await="Initiating" done="Completed" />
+      <SendScreen show={g} command="grid" disabled={disabled}
+        resetModal={() => { resetModal() }} name="Grid Simulation"
+        description={Descriptions.grid} await="Initiating" done="Completed" />
+      <SendScreen show={c} command="super" disabled={disabled}
+        resetModal={() => { resetModal() }} name="Super Charging Station"
+        description={Descriptions.super} await="Going to" done="Arrived at" />
+      <SendScreen show={batteryModal} command="battery" disabled={disabled}
+        resetModal={() => { closeBatteryModal() }}
+        name="Car Battery" color={battery.color} level={battery.simulated}
+        description={Descriptions.battery} />
       {
         lowBattery &&
         <SendModal>
@@ -619,43 +547,6 @@ const SendModal = styled.div`
   flex-direction: column;
 `;
 
-const GoBack = styled(BackArrow)`
-  height: 6vh;
-  position: absolute;
-  left:0;
-  top:0;
-  padding: 2em;
-  transition: transform .2s;
-  pointer-events: ${({ disabled }) => disabled ? "auto" : "none"};
-  path {
-    fill: ${({ disabled }) => disabled ? "white" : "grey"};;
-  }
-  &:hover, &:active{
-    transform: scale(1.05);
-  }
-`;
-
-const Dots = styled.span`
-  &::after {
-    display: ${({ show }) => !show ? "none" : "inline-block"};
-    animation: ellipsis 1.25s infinite;
-    content: ".";
-    width: 1em;
-    text-align: left;
-  }
-  @keyframes ellipsis {
-    0% {
-      content: ".";
-    }
-    33% {
-      content: "..";
-    }
-    66% {
-      content: "...";
-    }
-  }
-`
-
 const Title = styled.div` 
   color: white;
   font-family: 'Helvetica', 'Arial', sans-serif;
@@ -668,16 +559,6 @@ const Header = styled.div`
   height: 30vh;
 `;
 
-const Description = styled.div`
-  display: flex;
-  align-items: center;
-  color: white;
-  font-family: 'Helvetica', 'Arial', sans-serif;
-  font-size: 20px;
-  padding: 10vh;
-  max-width: 700px;
-  text-align: center;
-`;
 const colors = ['red', 'blue', 'green', 'purple'];
 
 

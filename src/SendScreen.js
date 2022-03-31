@@ -4,6 +4,7 @@ import {
     BackArrow
 } from '../icons';
 import { CommandIcons } from '../components/constants';
+import { motion } from 'framer-motion';
 
 function SendScreen(props) {
 
@@ -12,7 +13,7 @@ function SendScreen(props) {
         let timeout = null;
 
         useEffect(() => {
-            if(!disabled){
+            if (!props.disabled) {
                 restartAutoReset();
 
                 window.addEventListener('mousemove', onMouseMove);
@@ -22,16 +23,16 @@ function SendScreen(props) {
 
         const onMouseMove = () => {
             restartAutoReset();
-          };
+        };
 
         const restartAutoReset = () => {
             if (timeout) {
-              clearTimeout(timeout);
+                clearTimeout(timeout);
             }
             timeout = setTimeout(() => {
-              props.resetModal();
-            }, 1000 * 5); // 60 Seconds
-          };
+                props.resetModal();
+            }, 1000 * 60); // 60 Seconds
+        };
 
         return (
             <SendWrapper>
@@ -39,12 +40,28 @@ function SendScreen(props) {
                 <Header>
                     {props.command === "battery" ?
                         <Title>
-                            {props.name}
+                            {props.lowBattery ? "ALERT! Car Has Low Battery" : props.name}
                         </Title>
                         :
                         <Title>{props.disabled ? props.await : props.done} {props.name}<Dots show={props.disabled} /></Title>}
                 </Header>
-
+                {props.command === "home" &&
+                    <Options>
+                        <motion.div whileHover={{
+                            scale: 1.2,
+                            transition: { duration: .2 },
+                        }}
+                            whileTap={{ scale: 0.9 }}>
+                            <srcIcon.src2 height="15vh" onClick={() => { props.sendCommand('qh') }} />
+                        </motion.div>
+                        <motion.div whileHover={{
+                            scale: 1.2,
+                            transition: { duration: .2 },
+                        }}
+                            whileTap={{ scale: 0.9 }}>
+                            <srcIcon.src3 height="15vh" onClick={() => { props.sendCommand('qc') }} />
+                        </motion.div>
+                    </Options>}
                 {props.command === "battery" ?
                     <>
                         <srcIcon.src height="20vh" color={props.color} level={props.level} />
@@ -88,6 +105,11 @@ const Header = styled.div`
   height: 30vh;
 `;
 
+const Options = styled.div`
+    display: flex;
+    justify-content: space-evenly;
+    width: 100%;
+`
 const Description = styled.div`
   display: flex;
   align-items: center;
@@ -105,9 +127,9 @@ const GoBack = styled(BackArrow)`
   top:0;
   padding: 2em;
   transition: transform .2s;
-  pointer-events: ${({ disabled }) => disabled ? "auto" : "none"};
+  pointer-events: ${({ disabled }) => disabled ? "none" : "auto"};
   path {
-    fill: ${({ disabled }) => disabled ? "white" : "grey"};;
+    fill: ${({ disabled }) => disabled ? "grey" : "white"};;
   }
   &:hover, &:active{
     transform: scale(1.05);

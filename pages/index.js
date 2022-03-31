@@ -421,7 +421,7 @@ const Home = () => {
           </Header>
           <Battery color={battery.color} level={battery.simulated} height="20vh" />
           <Title>
-            {battery.simulated}%
+            {Math.round(battery.simulated*10)/10}%
           </Title>
           <Description>
             {Descriptions.battery}

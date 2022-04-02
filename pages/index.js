@@ -162,7 +162,7 @@ export default class Home extends React.Component {
         lowBattery: false
       })
     }
-    else if (value == "sc") { //stopped charging
+    else if (value == "d") { //stopped charging
       battery.charging = false;
       this.setState({
         battery: battery

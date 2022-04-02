@@ -406,21 +406,21 @@ export default class Home extends React.Component {
           resetModal={() => { this.resetModal() }} sendCommand={this.sendCommand} name="Home"
           description={Descriptions.home} await="Going" done="Arrived" />
         <SendScreen show={s} command="solar" disabled={disabled}
-          resetModal={() => { this.resetModal() }} name="Solar Charging Station"
+          resetModal={() => { this.resetModal() }}  sendCommand={this.sendCommand} name="Solar Charging Station"
           description={Descriptions.solar} await="Going to" done="Arrived at" />
         <SendScreen show={w} command="work" disabled={disabled}
-          resetModal={() => { this.resetModal() }} name="Work"
+          resetModal={() => { this.resetModal() }}  sendCommand={this.sendCommand} name="Work"
           description={Descriptions.work} await="Going to" done="Arrived at" />
         <SendScreen show={o} command="outage" disabled={disabled}
-          resetModal={() => { this.resetModal() }} name="Power Outage Scenario"
+          resetModal={() => { this.resetModal() }}  sendCommand={this.sendCommand} name="Power Outage Scenario"
           description={Descriptions.outage} await="Initiating" done="Completed" />
         <SendScreen show={g} command="grid" disabled={disabled}
-          resetModal={() => { this.resetModal() }} name="Grid Simulation"
+          resetModal={() => { this.resetModal() }}  sendCommand={this.sendCommand} name="Grid Simulation"
           description={Descriptions.grid} await="Initiating" done="Completed" />
         <SendScreen show={c} command="super" disabled={disabled}
-          resetModal={() => { this.resetModal() }} name="Super Charging Station"
+          resetModal={() => { this.resetModal() }}  sendCommand={this.sendCommand} name="Super Charging Station"
           description={Descriptions.super} await="Going to" done="Arrived at" />
-        <SendScreen show={batteryModal || lowBatteryScreen} command="battery" disabled={false}
+        <SendScreen show={batteryModal || lowBatteryScreen}  sendCommand={this.sendCommand} command="battery" disabled={false}
           resetModal={() => { this.closeBatteryModal() }} lowBattery={lowBattery}
           name="Car Battery" charging={battery.charging} color={battery.color} level={battery.simulated} await="Charging" done="Charged"
           description={Descriptions.battery} />

@@ -10,7 +10,6 @@ function SendScreen(props) {
 
     if (props.show) {
         const srcIcon = CommandIcons.find(icon => icon.name === props.command);
-        console.log(srcIcon);
         let timeout = null;
 
         useEffect(() => {

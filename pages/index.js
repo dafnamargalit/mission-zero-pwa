@@ -349,9 +349,9 @@ export default class Home extends React.Component {
 
         {!isConnected && paired_devices.map((car, i) => {
           return (
-            <div key={i}>
-              <CarSelect x={i} carColor={CarColors[i]} onClick={() => { this.pairCar(car); }} />
-            </div>
+            <>
+              <CarSelect key={i} x={i} carColor={CarColors[i]} onClick={() => { this.pairCar(car); }} />
+            </>
           )
         })}
 
@@ -501,7 +501,7 @@ const BLEDisconnectIcon = styled(BLEDisconnect)`
 const SendHome = styled(HomeCommand)`
   position: absolute;
   height: ${({ customHeight }) => customHeight ? `${customHeight}vh` : "10vh"};
-  width: 10vh;
+  width: ${({ customHeight }) => customHeight ? `${customHeight}vh` : "10vh"};
   border-radius: 50%;
   margin-left: auto;
   margin-right: auto;

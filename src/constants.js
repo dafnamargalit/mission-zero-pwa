@@ -24,8 +24,9 @@ export const CommandIcons = [
   { name: "solar", src: SolarCommand },
   { name: "super", src: SuperChargeCommand },
   { name: "outage", src: OutageCommand },
-  { name: "battery", src: Battery }
-
+  { name: "battery", src: Battery },
+  { name: "carCharge", src: ChargeCar},
+  { name: "homeCharge", src: ChargeHome}
 ];
 
 export const CarColors = ['red', 'blue', 'green', 'purple'];

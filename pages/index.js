@@ -6,7 +6,7 @@ import {
   HomeCommand, WorkCommand, SolarCommand, SuperChargeCommand,
   OutageCommand
 } from '../icons';
-import { Descriptions, CarColors } from '../components/constants';
+import { Descriptions, CarColors } from '../src/constants';
 import { motion } from 'framer-motion';
 import ReactModal from 'react-modal';
 import SendScreen from '../src/SendScreen';
@@ -28,8 +28,7 @@ export default class Home extends React.Component {
       o: false,
       g: false,
       c: false,
-      qh: false,
-      qc: false,
+      q: false,
       disabled: false,
       batteryModal: false,
       battery: { actual: null, simulated: 100, connected: false, color: "#00ff00" },
@@ -85,6 +84,7 @@ export default class Home extends React.Component {
       o: false,
       g: false,
       c: false,
+      q: false,
       disabled: false,
     });
   }
@@ -248,15 +248,9 @@ export default class Home extends React.Component {
           c: true,
         });
       }
-      if (data === 'qh') {
+      if (data === 'q') {
         this.setState({
-          qh: true,
-          h: false
-        });
-      }
-      if (data === 'qc') {
-        this.setState({
-          qc: true,
+          batteryModal: true,
           h: false
         });
       }
@@ -331,8 +325,7 @@ export default class Home extends React.Component {
   render() {
     const { isConnected, paired_devices, battery,
       lowBattery, receiveModal, receivedData,
-      disabled, h, w, o, s, g, c, batteryModal, 
-      chargePrompt, lowBatteryScreen } = this.state;
+      disabled, h, w, o, s, g, c, batteryModal, q, lowBatteryScreen } = this.state;
     return (
       <HomeWrap>
         <Head>
@@ -406,7 +399,7 @@ export default class Home extends React.Component {
         </ReactModal>
 
         <SendScreen show={h} command="home" disabled={disabled}
-          resetModal={() => { this.resetModal() }} sendCommand={() => {this.sendCommand()}} name="Home"
+          resetModal={() => { this.resetModal() }} sendCommand={this.sendCommand} name="Home"
           description={Descriptions.home} await="Going" done="Arrived" />
         <SendScreen show={s} command="solar" disabled={disabled}
           resetModal={() => { this.resetModal() }} name="Solar Charging Station"
@@ -425,10 +418,8 @@ export default class Home extends React.Component {
           description={Descriptions.super} await="Going to" done="Arrived at" />
         <SendScreen show={batteryModal || lowBatteryScreen} command="battery" disabled={false}
           resetModal={() => { this.closeBatteryModal() }} lowBattery={lowBattery}
-          name="Car Battery" color={battery.color} level={battery.simulated}
+          name="Car Battery" charging={battery.charging} color={battery.color} level={battery.simulated} await="Charging" done="Charged"
           description={Descriptions.battery} />
-        <SendScreen show={chargePrompt} command="charge" resetModal={() => {this.resetModal()}}
-        name="Charge Car or Charge Home?" description={Descriptions.charging} />
       </HomeWrap>
     )
   }

@@ -3,13 +3,14 @@ import styled from 'styled-components';
 import {
     BackArrow
 } from '../icons';
-import { CommandIcons } from '../components/constants';
+import { CommandIcons } from './constants';
 import { motion } from 'framer-motion';
 
 function SendScreen(props) {
 
     if (props.show) {
         const srcIcon = CommandIcons.find(icon => icon.name === props.command);
+        console.log(srcIcon);
         let timeout = null;
 
         useEffect(() => {
@@ -40,11 +41,13 @@ function SendScreen(props) {
                 <Header>
                     {props.command === "battery" ?
                         <Title>
-                            {props.lowBattery ? "ALERT! Car Has Low Battery" : props.name}
+                            {props.lowBattery ? "ALERT! Car Has Low Battery" : props.charging ? "Charging Battery" : props.name}{props.charging ? <Dots show={true} /> : ""}
                         </Title>
                         :
-                        <Title>{props.disabled ? props.await : props.done} {props.name}<Dots show={props.disabled} /></Title>}
+                        <Title>{props.disabled ? props.await : props.done} {props.name} <Dots show={props.disabled} /></Title>}
+                    <Subtitle>{props.name === "Home" ? "Select if you would like to Charge the Car or Charge the Home" : ""}</Subtitle>
                 </Header>
+
                 {props.command === "home" &&
                     <Options>
                         <motion.div whileHover={{
@@ -52,14 +55,16 @@ function SendScreen(props) {
                             transition: { duration: .2 },
                         }}
                             whileTap={{ scale: 0.9 }}>
-                            <srcIcon.src2 height="15vh" onClick={() => { props.sendCommand('qh') }} />
+                            <srcIcon.src2 height="15vh" onClick={() => { props.sendCommand('q') }} />
+                            <Subtitle>Charge Car</Subtitle>
                         </motion.div>
                         <motion.div whileHover={{
                             scale: 1.2,
                             transition: { duration: .2 },
                         }}
-                            whileTap={{ scale: 0.9 }}>
-                            <srcIcon.src3 height="15vh" onClick={() => { props.sendCommand('qc') }} />
+                            whileTap={{ scale: 0.9 }} style={{display: 'flex', alignItems:'center', flexDirection: 'column', justifyContent: 'center'}}>
+                            <srcIcon.src3 height="15vh" onClick={() => { props.sendCommand('q') }} />
+                            <Subtitle>Charge Home</Subtitle>
                         </motion.div>
                     </Options>}
                 {props.command === "battery" ?
@@ -97,12 +102,24 @@ const Title = styled.div`
   color: white;
   font-family: 'Helvetica', 'Arial', sans-serif;
   font-size: 20px;
+  margin: 2vh;
 `;
+
+const Subtitle = styled.div`
+    color: white;
+    font-family: 'Helvetica', 'Arial', sans-serif;
+    font-size: 20px;
+    margin: 2vh;
+    font-style: italic;
+`;
+
 
 const Header = styled.div` 
   display: flex;
   align-items: center;
+  justify-content: center;
   height: 30vh;
+  flex-direction: column;
 `;
 
 const Options = styled.div`

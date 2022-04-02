@@ -44,12 +44,12 @@ function SendScreen(props) {
                             {props.lowBattery ? "ALERT! Car Has Low Battery" : props.charging ? "Charging Battery" : props.name}{props.charging ? <Dots show={true} /> : ""}
                         </Title>
                         :
-                        <Title>{props.disabled ? props.await : props.done} {props.name} <Dots show={props.disabled} /></Title>}
-                    <Subtitle>{props.name === "Home" ? "Select if you would like to Charge the Car or Charge the Home" : ""}</Subtitle>
+                        <Title>{props.disabled ? props.await : props.done} {props.name}<Dots show={props.disabled} /></Title>}
+                    <Subtitle disabled={props.disabled}>{props.name === "Home" ? "Select if you would like to Charge the Car or Charge the Home" : ""}</Subtitle>
                 </Header>
 
                 {props.command === "home" &&
-                    <Options>
+                    <Options disabled={props.disabled}>
                         <motion.div whileHover={{
                             scale: 1.2,
                             transition: { duration: .2 },
@@ -111,6 +111,7 @@ const Subtitle = styled.div`
     font-size: 20px;
     margin: 2vh;
     font-style: italic;
+    display: ${({ disabled }) => disabled ? "none" : "flex"};
 `;
 
 
@@ -123,7 +124,7 @@ const Header = styled.div`
 `;
 
 const Options = styled.div`
-    display: flex;
+    display: ${({ disabled }) => disabled ? "none" : "flex"};
     justify-content: space-evenly;
     width: 100%;
 `
@@ -146,7 +147,7 @@ const GoBack = styled(BackArrow)`
   transition: transform .2s;
   pointer-events: ${({ disabled }) => disabled ? "none" : "auto"};
   path {
-    fill: ${({ disabled }) => disabled ? "grey" : "white"};;
+    fill: ${({ disabled }) => disabled ? "grey" : "white"};
   }
   &:hover, &:active{
     transform: scale(1.05);

@@ -29,7 +29,7 @@ export default class Home extends React.Component {
       g: false,
       c: false,
       q: false,
-      disabled: false,
+      disabled: true,
       batteryModal: false,
       battery: { actual: null, simulated: 100, connected: false, color: "#00ff00" },
       lowBattery: false,
@@ -85,7 +85,7 @@ export default class Home extends React.Component {
       g: false,
       c: false,
       q: false,
-      disabled: false,
+      disabled: true,
     });
   }
 
@@ -274,7 +274,7 @@ export default class Home extends React.Component {
         }
       }
       else {
-        characteristicCache.writeValue(new TextEncoder().encode(data))
+        characteristicCache.writeValue(new TextEncoder().encode(data)).catch(error => {console.log(error)})
       }
 
     }

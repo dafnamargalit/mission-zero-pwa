@@ -73,7 +73,7 @@ export default class Home extends React.Component {
       battery.connected = true;
       this.setState({ battery: battery });
     }
-    )
+    ).catch(error => {console.log(error)});
   }
 
   resetModal = () => {
@@ -109,6 +109,7 @@ export default class Home extends React.Component {
     })
     console.log('> Bluetooth Device disconnected');
   }
+
   handleCharacteristicValueChanged = (event) => {
     let value = new TextDecoder().decode(event.target.value);
     let battery = { ...this.state.battery };
@@ -175,6 +176,7 @@ export default class Home extends React.Component {
       console.log(value, 'in');
     }
   }
+  
   disconnect = () => {
     const {deviceCache, characteristicCache} = this.state;
     if (deviceCache) {
@@ -382,6 +384,7 @@ export default class Home extends React.Component {
               alignItems: 'center',
               justifyContent: 'center',
               backgroundColor: 'white',
+              color: 'black',
               border: 'none',
               borderRadius: '1em',
               height: '60vh',
@@ -390,7 +393,8 @@ export default class Home extends React.Component {
               top: '50%',
               right: '0',
               bottom: '0',
-              transform: 'translate(-50%, -50%)'
+              transform: 'translate(-50%, -50%)',
+              fontFamily: "Helvetica, Arial, sans-serif"
             }
           }
           }

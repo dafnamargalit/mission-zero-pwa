@@ -1,13 +1,10 @@
 import React, { useEffect } from 'react';
 import styled from 'styled-components';
-import {
-    BackArrow, ChargingIcon
-} from '../icons';
+import { BackArrow, ChargingIcon } from '../icons';
 import { CommandIcons } from './constants';
 import { motion } from 'framer-motion';
 
 function SendScreen(props) {
-
     if (props.show) {
         const srcIcon = CommandIcons.find(icon => icon.name === props.command);
         let timeout = null;
@@ -74,7 +71,7 @@ function SendScreen(props) {
                             {props.charging ? <ShowCharging /> : ""}
                         </BatteryWrap>
                         <Title>
-                            {Math.round(props.level * 10) / 10}%
+                            Battery Percentage: {Math.round(props.level * 10) / 10}%
                         </Title>
                     </>
                     :
@@ -122,6 +119,7 @@ const ShowCharging = styled(ChargingIcon)`
     height: 6vh;
     left: 5.5vh;
 `;
+
 const BatteryWrap = styled.div`
     display: flex;
     align-items: center;
@@ -141,6 +139,7 @@ const Options = styled.div`
     justify-content: space-evenly;
     width: 100%;
 `
+
 const Description = styled.div`
   display: flex;
   align-items: center;
@@ -151,6 +150,7 @@ const Description = styled.div`
   max-width: 700px;
   text-align: center;
 `;
+
 const GoBack = styled(BackArrow)`
   height: 6vh;
   position: absolute;

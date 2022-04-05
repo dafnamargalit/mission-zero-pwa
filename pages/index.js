@@ -2,8 +2,10 @@ import React from 'react';
 import Head from 'next/head';
 import styled from 'styled-components';
 import {
-  Logo, Car, Battery, Grid, BLEConnect, BLEDisconnect,
-  HomeCommand, WorkCommand, SolarCommand, SuperChargeCommand,
+  Logo, Car, Battery, Grid,
+  BLEConnect, BLEDisconnect,
+  HomeCommand, WorkCommand,
+  SolarCommand, SuperChargeCommand,
   OutageCommand
 } from '../icons';
 import { Descriptions, CarColors } from '../src/constants';
@@ -41,6 +43,9 @@ export default class Home extends React.Component {
     }
   }
 
+  /*
+    Once bluetooth devices are found, pair with the selected device.
+  */
   pairCar = (device) => {
     if (device.gatt.connected && this.state.characteristicCache) {
       console.log("Already Connected.");
@@ -114,6 +119,7 @@ export default class Home extends React.Component {
     let value = new TextDecoder().decode(event.target.value);
     let battery = { ...this.state.battery };
     console.log("Received: ", value);
+
     if (value[0] == "a") { //arrived
       this.setState({ disabled: false })
     }
@@ -248,12 +254,6 @@ export default class Home extends React.Component {
           c: true,
         });
       }
-      if (data === 'q') {
-        this.setState({
-          batteryModal: true,
-          h: false
-        });
-      }
       if (!data || !characteristicCache) {
         return;
       }
@@ -325,7 +325,7 @@ export default class Home extends React.Component {
   render() {
     const { isConnected, paired_devices, battery,
       lowBattery, receiveModal, receivedData,
-      disabled, h, w, o, s, g, c, batteryModal, q, lowBatteryScreen } = this.state;
+      disabled, h, w, o, s, g, c, batteryModal, lowBatteryScreen } = this.state;
     return (
       <HomeWrap>
         <Head>

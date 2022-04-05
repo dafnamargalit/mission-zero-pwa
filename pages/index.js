@@ -113,7 +113,7 @@ export default class Home extends React.Component {
   handleCharacteristicValueChanged = (event) => {
     let value = new TextDecoder().decode(event.target.value);
     let battery = { ...this.state.battery };
-    console.log(value);
+    console.log("Received: ", value);
     if (value[0] == "a") { //arrived
       this.setState({ disabled: false })
     }
@@ -128,14 +128,12 @@ export default class Home extends React.Component {
       if (battery.actual == null) {
         battery.actual = batteryVal / 100;
         this.setState({ battery: battery });
-        console.log(battery.actual)
       }
       else {
         let diff = battery.actual - batteryVal / 100;
-        console.log(battery.actual, battery.simulated, diff);
         battery.actual = batteryVal / 100;
         battery.simulated = batteryVal / 100;
-        if (diff > 0) {
+        if (diff > 0 && (diff*10 > batteryVal / 100)) {
           battery.simulated = (batteryVal / 100) - diff * 10;
         }
       }

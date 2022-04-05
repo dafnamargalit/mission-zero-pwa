@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import styled from 'styled-components';
 import {
-    BackArrow
+    BackArrow, ChargingIcon
 } from '../icons';
 import { CommandIcons } from './constants';
 import { motion } from 'framer-motion';
@@ -62,14 +62,17 @@ function SendScreen(props) {
                             scale: 1.2,
                             transition: { duration: .2 },
                         }}
-                            whileTap={{ scale: 0.9 }} style={{display: 'flex', alignItems:'center', flexDirection: 'column', justifyContent: 'center'}}>
+                            whileTap={{ scale: 0.9 }} style={{ display: 'flex', alignItems: 'center', flexDirection: 'column', justifyContent: 'center' }}>
                             <srcIcon.src3 height="15vh" onClick={() => { props.sendCommand('q') }} />
                             <Subtitle>Charge Home</Subtitle>
                         </motion.div>
                     </Options>}
                 {props.command === "battery" ?
                     <>
-                        <srcIcon.src height="20vh" color={props.color} level={props.level} />
+                        <BatteryWrap>
+                            <srcIcon.src height="20vh" color={props.color} level={props.level} />
+                            {props.charging ? <ShowCharging /> : ""}
+                        </BatteryWrap>
                         <Title>
                             {Math.round(props.level * 10) / 10}%
                         </Title>
@@ -114,7 +117,17 @@ const Subtitle = styled.div`
     display: ${({ disabled }) => disabled ? "none" : "flex"};
 `;
 
-
+const ShowCharging = styled(ChargingIcon)`
+    position: absolute;
+    height: 6vh;
+    left: 5.5vh;
+`;
+const BatteryWrap = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+`;
 const Header = styled.div` 
   display: flex;
   align-items: center;

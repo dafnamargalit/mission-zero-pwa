@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Head from 'next/head';
 import styled from 'styled-components';
 import {
@@ -73,7 +73,7 @@ export default class Home extends React.Component {
       battery.connected = true;
       this.setState({ battery: battery });
     }
-    ).catch(error => {console.log(error)});
+    ).catch(error => { console.log(error) });
   }
 
   resetModal = () => {
@@ -133,7 +133,7 @@ export default class Home extends React.Component {
         let diff = battery.actual - batteryVal / 100;
         battery.actual = batteryVal / 100;
         battery.simulated = batteryVal / 100;
-        if (diff > 0 && (diff*10 > batteryVal / 100)) {
+        if (diff > 0 && (diff * 10 > batteryVal / 100)) {
           battery.simulated = (batteryVal / 100) - diff * 10;
         }
       }
@@ -174,9 +174,9 @@ export default class Home extends React.Component {
       console.log(value, 'in');
     }
   }
-  
+
   disconnect = () => {
-    const {deviceCache, characteristicCache} = this.state;
+    const { deviceCache, characteristicCache } = this.state;
     if (deviceCache) {
       console.log('Disconnecting from "' + deviceCache.name + '" bluetooth device...');
 
@@ -207,7 +207,7 @@ export default class Home extends React.Component {
   }
 
   sendCommand = (data) => {
-    const {deviceCache, characteristicCache} = this.state;
+    const { deviceCache, characteristicCache } = this.state;
 
     if (deviceCache && !deviceCache.gatt.connected) {
       this.setState({
@@ -272,7 +272,7 @@ export default class Home extends React.Component {
         }
       }
       else {
-        characteristicCache.writeValue(new TextEncoder().encode(data)).catch(error => {console.log(error)})
+        characteristicCache.writeValue(new TextEncoder().encode(data)).catch(error => { console.log(error) })
       }
 
     }
@@ -404,21 +404,21 @@ export default class Home extends React.Component {
           resetModal={() => { this.resetModal() }} sendCommand={this.sendCommand} name="Home"
           description={Descriptions.home} await="Going" done="Arrived" />
         <SendScreen show={s} command="solar" disabled={disabled}
-          resetModal={() => { this.resetModal() }}  sendCommand={this.sendCommand} name="Solar Charging Station"
+          resetModal={() => { this.resetModal() }} sendCommand={this.sendCommand} name="Solar Charging Station"
           description={Descriptions.solar} await="Going to" done="Arrived at" />
         <SendScreen show={w} command="work" disabled={disabled}
-          resetModal={() => { this.resetModal() }}  sendCommand={this.sendCommand} name="Work"
+          resetModal={() => { this.resetModal() }} sendCommand={this.sendCommand} name="Work"
           description={Descriptions.work} await="Going to" done="Arrived at" />
         <SendScreen show={o} command="outage" disabled={disabled}
-          resetModal={() => { this.resetModal() }}  sendCommand={this.sendCommand} name="Power Outage Scenario"
+          resetModal={() => { this.resetModal() }} sendCommand={this.sendCommand} name="Power Outage Scenario"
           description={Descriptions.outage} await="Initiating" done="Completed" />
         <SendScreen show={g} command="grid" disabled={disabled}
-          resetModal={() => { this.resetModal() }}  sendCommand={this.sendCommand} name="Grid Simulation"
+          resetModal={() => { this.resetModal() }} sendCommand={this.sendCommand} name="Grid Simulation"
           description={Descriptions.grid} await="Initiating" done="Completed" />
         <SendScreen show={c} command="super" disabled={disabled}
-          resetModal={() => { this.resetModal() }}  sendCommand={this.sendCommand} name="Super Charging Station"
+          resetModal={() => { this.resetModal() }} sendCommand={this.sendCommand} name="Super Charging Station"
           description={Descriptions.super} await="Going to" done="Arrived at" />
-        <SendScreen show={batteryModal || lowBatteryScreen}  sendCommand={this.sendCommand} command="battery" disabled={false}
+        <SendScreen show={batteryModal || lowBatteryScreen} sendCommand={this.sendCommand} command="battery" disabled={false}
           resetModal={() => { this.closeBatteryModal() }} lowBattery={lowBattery}
           name="Car Battery" charging={battery.charging} color={battery.color} level={battery.simulated} await="Charging" done="Charged"
           description={Descriptions.battery} />
@@ -442,6 +442,7 @@ const HomeHeader = styled.div`
   left: 0;
   top: 2vh;
 `
+
 const BatteryFooter = styled.div`
   position: absolute;
   z-index: 1000;
@@ -467,8 +468,6 @@ const Button = styled(Logo)`
     transform: scale(1.05);
   }
 `;
-
-
 
 const CarSelect = styled(Car)`
 position: absolute;
@@ -591,27 +590,3 @@ const SendSuperCharge = styled(SuperChargeCommand)`
     transform: scale(1.05) translateY(25vh);
   }
 `;
-const SendModal = styled.div` 
-  position: absolute;
-  height: 100vh;
-  width: 100%;
-  background-color: black;
-  display: flex;
-  align-items: center;
-
-  flex-direction: column;
-`;
-
-const Title = styled.div` 
-  color: white;
-  font-family: 'Helvetica', 'Arial', sans-serif;
-  font-size: 20px;
-`;
-
-const Header = styled.div` 
-  display: flex;
-  align-items: center;
-  height: 30vh;
-`;
-
-

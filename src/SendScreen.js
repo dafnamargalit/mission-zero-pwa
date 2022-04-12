@@ -106,7 +106,7 @@ const SendWrapper = styled.div`
 const Title = styled.div` 
   color: white;
   font-family: 'Helvetica', 'Arial', sans-serif;
-  font-size: 20px;
+  font-size: 25px;
   margin: 2vh;
 `;
 
@@ -154,6 +154,7 @@ const Description = styled.div`
   padding: 10vh;
   max-width: 700px;
   text-align: center;
+  font-style: italic;
 `;
 
 const GoBack = styled(BackArrow)`

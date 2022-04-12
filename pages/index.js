@@ -604,9 +604,9 @@ const SendHome = styled.div`
   justify-content: center;
   flex-direction: column;
   transition: transform .2s;
-  transform: translateY(-25vh);
+  transform: translateY(-27vh);
   &:hover, &:active{
-    transform: scale(1.05) translateY(-25vh);
+    transform: scale(1.05) translateY(-27vh);
   }
 `;
 
@@ -624,9 +624,9 @@ const SendGrid = styled.div`
   justify-content: center;
   flex-direction: column;
   transition: transform .2s;
-  transform: translateY(-10vh) translateX(22vh);
+  transform: translateY(-10vh) translateX(24vh);
   &:hover, &:active{
-    transform: scale(1.05) translateY(-10vh) translateX(22vh);
+    transform: scale(1.05) translateY(-10vh) translateX(24vh);
   }
 `
 
@@ -644,9 +644,9 @@ const SendWork = styled.div`
   justify-content: center;
   flex-direction: column;
   transition: transform .2s;
-  transform: translateY(15vh) translateX(-22vh);
+  transform: translateY(15vh) translateX(-24vh);
   &:hover, &:active{
-    transform: scale(1.05) translateY(15vh) translateX(-22vh);
+    transform: scale(1.05) translateY(15vh) translateX(-24vh);
   }
 `;
 
@@ -664,9 +664,9 @@ const SendSolar = styled.div`
   justify-content: center;
   flex-direction: column;
   transition: transform .2s;
-  transform: translateY(15vh) translateX(22vh);
+  transform: translateY(15vh) translateX(24vh);
   &:hover, &:active{
-    transform: scale(1.05) translateY(15vh) translateX(22vh);
+    transform: scale(1.05) translateY(15vh) translateX(24vh);
   }
 `;
 
@@ -684,9 +684,9 @@ const SendOutage = styled.div`
   justify-content: center;
   flex-direction: column;
   transition: transform .2s;
-  transform: translateY(-10vh) translateX(-22vh);
+  transform: translateY(-10vh) translateX(-24vh);
   &:hover, &:active{
-    transform: scale(1.05) translateY(-10vh) translateX(-22vh);
+    transform: scale(1.05) translateY(-10vh) translateX(-24vh);
   }
 `;
 
@@ -712,8 +712,8 @@ const SendSuperCharge = styled.div`
   justify-content: center;
   flex-direction: column;
   transition: transform .2s;
-  transform: translateY(25vh);
+  transform: translateY(27vh);
   &:hover, &:active{
-    transform: scale(1.05) translateY(25vh);
+    transform: scale(1.05) translateY(27vh);
   }
 `;

@@ -90,7 +90,7 @@ export default class Home extends React.Component {
       g: false,
       c: false,
       q: false,
-      disabled: true,
+      disabled: false,
     });
   }
 
@@ -283,8 +283,21 @@ export default class Home extends React.Component {
         this.setState({
           batteryModal: true,
           disabled: false,
-          battery: battery
+          battery: battery,
+          h: false,
         })
+      }
+      if(data === 'q'){
+        let battery = this.state.battery;
+        battery.charging = true;
+        this.setState({
+          batteryModal: true,
+          disabled: false,
+          battery: battery,
+          s: false,
+          c: false
+        })
+        return;
       }
       if (!data || !characteristicCache) {
         return;

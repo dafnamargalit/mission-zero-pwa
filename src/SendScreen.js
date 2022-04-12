@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { BackArrow, ChargingIcon } from '../icons';
 import { CommandIcons } from './constants';
@@ -8,11 +8,14 @@ function SendScreen(props) {
     if (props.show) {
         const srcIcon = CommandIcons.find(icon => icon.name === props.command);
         let timeout = null;
-
+        const [sent, setSent] = useState(false);
         useEffect(() => {
             if (!props.disabled) {
                 restartAutoReset();
-
+                if( (props.command === "solar" || props.command === "super")  && sent === false) {
+                   setTimeout( () => {props.sendCommand('q')}, 1000);
+                    setSent(true);
+                }
                 window.addEventListener('mousemove', onMouseMove);
                 window.addEventListener('touchstart', onMouseMove);
             }
@@ -48,7 +51,6 @@ function SendScreen(props) {
                         <Title>{props.disabled ? props.await : props.done} {props.name}<Dots show={props.disabled} /></Title>}
                     <Subtitle disabled={props.disabled}>{props.name === "Home" ? "Select if you would like to Charge the Car or Charge the Home" : ""}</Subtitle>
                 </Header>
-
                 {props.command === "home" &&
                     <Options disabled={props.disabled}>
                         <motion.div whileHover={{

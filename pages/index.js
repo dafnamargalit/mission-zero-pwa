@@ -225,41 +225,59 @@ export default class Home extends React.Component {
     else {
       data = String(data);
       if (data === 'h') {
+        let battery = this.state.battery;
+        battery.charging = false;
         this.setState({
           h: true,
-          disabled: true
+          disabled: true,
+          battery: battery
         });
       }
       if (data === 's') {
+        let battery = this.state.battery;
+        battery.charging = true;
         this.setState({
           s: true,
-          disabled: true
+          disabled: true,
+          battery: battery
         });
       }
       if (data === 'w') {
+        let battery = this.state.battery;
+        battery.charging = false;
         this.setState({
           w: true,
-          disabled: true
+          disabled: true,
+          battery: battery
         });
       }
       if (data === 'o') {
+        let battery = this.state.battery;
+        battery.charging = false;
         this.setState({
           o: true,
+          disabled: true,
+          battery: battery
         });
       }
       if (data === 'g') {
+        let battery = this.state.battery;
+        battery.charging = false;
         this.setState({
           g: true,
-          disabled: true
+          disabled: true,
+          battery: battery
         });
       }
       if (data === 'c') {
+        let battery = this.state.battery;
+        battery.charging = false;
         this.setState({
           c: true,
           disabled: true
         });
       }
-      if(data === 'q') {
+      if (data === 'qc' || data === 'qh') {
         let battery = this.state.battery;
         battery.charging = true;
         this.setState({
@@ -301,7 +319,7 @@ export default class Home extends React.Component {
           if (devices.length == 0) {
             this.setState({
               receiveModal: true,
-              receivedData: "No Bluetooth devices found. Please ensure you are within range and check connection.",
+              receivedData: "No Bluetooth devices found. Please select the bluetooth icon in the top left and pair with a device.",
             });
           }
           for (const device of devices) {
@@ -350,13 +368,23 @@ export default class Home extends React.Component {
           <link rel="icon" href="/icon-192x192.png" />
           <link rel="apple-touch-icon" href="/icon-192x192.png" />
         </Head>
-        <HomeHeader>
+        <BluetoothWrapper>
           <motion.div whileTap={{ scale: 1.2 }} whileHover={{ scale: 1.1 }}>
             {!isConnected ? <BLEConnectIcon onClick={() => { this.requestDeviceOnClick(); }} />
               : <BLEDisconnectIcon onClick={() => { this.disconnect(); }} />}
           </motion.div>
-        </HomeHeader>
+        </BluetoothWrapper>
+        <HomeHeader>
+          <TitleWrap>
+            <Title>
+              EVEE: Electric Vehicle Ecosystem Exhibit
+            </Title>
+            <Subtitle>
+              {isConnected ? "Select an Icon To Interact" : "Click the middle icon and select a car"}
+            </Subtitle>
+          </TitleWrap>
 
+        </HomeHeader>
         <Button onClick={() => { this.getDevicesOnClick(); }} />
 
         {!isConnected && paired_devices.map((car, i) => {
@@ -369,16 +397,35 @@ export default class Home extends React.Component {
 
         {isConnected &&
           <>
-            <SendHome onClick={() => { this.sendCommand('h'); }} />
-            <SendWork onClick={() => { this.sendCommand('w'); }} />
-            <SendSolar onClick={() => { this.sendCommand('s'); }} />
-            <SendOutage onClick={() => { this.sendCommand('o'); }} />
-            <SendGrid onClick={() => { this.sendCommand('g'); }} />
-            <SendSuperCharge onClick={() => { this.sendCommand('c'); }} />
+            <SendHome onClick={() => { this.sendCommand('h'); }} >
+              <HomeCommand />
+              <Title>Home</Title>
+            </SendHome>
+
+            <SendWork onClick={() => { this.sendCommand('w'); }}>
+              <WorkCommand  />
+              <Title>Work</Title>
+            </SendWork>
+            <SendSolar onClick={() => { this.sendCommand('s'); }}>
+              <SolarCommand />
+              <Title style={{width:"20vh"}}> Solar Station</Title>
+            </SendSolar>
+            <SendOutage onClick={() => { this.sendCommand('o'); }}>
+              <OutageCommand />
+              <Title style={{width:"20vh"}}>Power Outage Scenario</Title>
+            </SendOutage>
+            <SendGrid onClick={() => { this.sendCommand('g'); }}>
+              <Grid />
+              <Title style={{width:"30vh"}}> Grid Simulation</Title>
+            </SendGrid>
+            <SendSuperCharge onClick={() => { this.sendCommand('c'); }}>
+              <SuperChargeCommand />
+              <Title style={{width:"30vh"}}>Supercharge</Title>
+            </SendSuperCharge>
           </>
         }
 
-        {battery.connected && <BatteryFooter onClick={() => { this.setState({ batteryModal: true }) }}>
+        {battery.connected && !batteryModal && <BatteryFooter onClick={() => { this.setState({ batteryModal: true }) }}>
           <Battery level={battery.simulated} color={battery.color} height="10vh" />
         </BatteryFooter>}
 
@@ -451,10 +498,20 @@ const HomeWrap = styled.div`
   background-color: #000;
 `;
 
-const HomeHeader = styled.div`
+const BluetoothWrapper = styled.div`
   position: absolute;
   left: 0;
   top: 2vh;
+  z-index: 1;
+`;
+
+const HomeHeader = styled.div`
+  position: absolute;
+  top: 4vh;
+  display: flex;
+  width: 100vw;
+  align-items: center;
+  justify-content: center;
 `
 
 const BatteryFooter = styled.div`
@@ -466,6 +523,30 @@ const BatteryFooter = styled.div`
     transform: scale(1.05);
   }
 `
+
+const Title = styled.div` 
+  color: white;
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  font-size: 20px;
+  margin-top: 2vh;
+  text-align: center;
+`;
+
+const TitleWrap = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+`;
+
+const Header = styled.div` 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 30vh;
+  background-color: blue;
+  flex-direction: column;
+`;
 
 const Button = styled(Logo)`
   position: absolute;
@@ -509,15 +590,19 @@ const BLEDisconnectIcon = styled(BLEDisconnect)`
   padding: 10px;
 `;
 
-const SendHome = styled(HomeCommand)`
+const SendHome = styled.div`
   position: absolute;
-  height: ${({ customHeight }) => customHeight ? `${customHeight}vh` : "10vh"};
+  height: ${({ customHeight }) => customHeight ? `${customHeight}vh` : "30vh"};
   width: ${({ customHeight }) => customHeight ? `${customHeight}vh` : "10vh"};
   border-radius: 50%;
   margin-left: auto;
   margin-right: auto;
   left: 0;
   right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
   transition: transform .2s;
   transform: translateY(-25vh);
   &:hover, &:active{
@@ -525,15 +610,19 @@ const SendHome = styled(HomeCommand)`
   }
 `;
 
-const SendGrid = styled(Grid)`
+const SendGrid = styled.div`
   position: absolute;
-  height: ${({ customHeight }) => customHeight ? `${customHeight}vh` : "10vh"};
-  width: 10vh;
+  height: ${({ customHeight }) => customHeight ? `${customHeight}vh` : "30vh"};
+  width: ${({ customHeight }) => customHeight ? `${customHeight}vh` : "10vh"};
   border-radius: 50%;
   margin-left: auto;
   margin-right: auto;
   left: 0;
   right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
   transition: transform .2s;
   transform: translateY(-10vh) translateX(22vh);
   &:hover, &:active{
@@ -541,15 +630,19 @@ const SendGrid = styled(Grid)`
   }
 `
 
-const SendWork = styled(WorkCommand)`
+const SendWork = styled.div`
   position: absolute;
-  height: 10vh;
-  width: 10vh;
+  height: ${({ customHeight }) => customHeight ? `${customHeight}vh` : "30vh"};
+  width: ${({ customHeight }) => customHeight ? `${customHeight}vh` : "10vh"};
   border-radius: 50%;
   margin-left: auto;
   margin-right: auto;
   left: 0;
   right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
   transition: transform .2s;
   transform: translateY(15vh) translateX(-22vh);
   &:hover, &:active{
@@ -557,15 +650,19 @@ const SendWork = styled(WorkCommand)`
   }
 `;
 
-const SendSolar = styled(SolarCommand)`
+const SendSolar = styled.div`
   position: absolute;
-  height: 10vh;
-  width: 10vh;
+  height: ${({ customHeight }) => customHeight ? `${customHeight}vh` : "30vh"};
+  width: ${({ customHeight }) => customHeight ? `${customHeight}vh` : "10vh"};
   border-radius: 50%;
   margin-left: auto;
   margin-right: auto;
   left: 0;
   right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
   transition: transform .2s;
   transform: translateY(15vh) translateX(22vh);
   &:hover, &:active{
@@ -573,15 +670,19 @@ const SendSolar = styled(SolarCommand)`
   }
 `;
 
-const SendOutage = styled(OutageCommand)`
+const SendOutage = styled.div`
   position: absolute;
-  height: 10vh;
-  width: 10vh;
+  height: ${({ customHeight }) => customHeight ? `${customHeight}vh` : "30vh"};
+  width: ${({ customHeight }) => customHeight ? `${customHeight}vh` : "10vh"};
   border-radius: 50%;
   margin-left: auto;
   margin-right: auto;
   left: 0;
   right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
   transition: transform .2s;
   transform: translateY(-10vh) translateX(-22vh);
   &:hover, &:active{
@@ -589,15 +690,27 @@ const SendOutage = styled(OutageCommand)`
   }
 `;
 
-const SendSuperCharge = styled(SuperChargeCommand)`
+const Subtitle = styled.div`
+    color: white;
+    font-family: 'Helvetica', 'Arial', sans-serif;
+    font-size: 20px;
+    font-style: italic;
+    margin-top: 1vh;
+`;
+
+const SendSuperCharge = styled.div`
   position: absolute;
-  height: 10vh;
-  width: 10vh;
+  height: ${({ customHeight }) => customHeight ? `${customHeight}vh` : "30vh"};
+  width: ${({ customHeight }) => customHeight ? `${customHeight}vh` : "10vh"};
   border-radius: 50%;
   margin-left: auto;
   margin-right: auto;
   left: 0;
   right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
   transition: transform .2s;
   transform: translateY(25vh);
   &:hover, &:active{

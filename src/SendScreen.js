@@ -56,7 +56,7 @@ function SendScreen(props) {
                             transition: { duration: .2 },
                         }}
                             whileTap={{ scale: 0.9 }}>
-                            <srcIcon.src2 height="15vh" onClick={() => { props.sendCommand('q') }} />
+                            <srcIcon.src2 height="15vh" onClick={() => { props.sendCommand('qc') }} />
                             <Subtitle>Charge Car</Subtitle>
                         </motion.div>
                         <motion.div whileHover={{
@@ -64,7 +64,7 @@ function SendScreen(props) {
                             transition: { duration: .2 },
                         }}
                             whileTap={{ scale: 0.9 }} style={{ display: 'flex', alignItems: 'center', flexDirection: 'column', justifyContent: 'center' }}>
-                            <srcIcon.src3 height="15vh" onClick={() => { props.sendCommand('q') }} />
+                            <srcIcon.src3 height="15vh" onClick={() => { props.sendCommand('qh') }} />
                             <Subtitle>Charge Home</Subtitle>
                         </motion.div>
                     </Options>}
@@ -96,6 +96,7 @@ const SendWrapper = styled.div`
     position: absolute;
     height: 100vh;
     width: 100%;
+    z-index: 2;
     background-color: black;
     display: flex;
     align-items: center;

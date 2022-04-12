@@ -50,7 +50,7 @@ function SendScreen(props) {
                 </Header>
 
                 {props.command === "home" &&
-                    <Options disabled={!props.disabled}>
+                    <Options disabled={props.disabled}>
                         <motion.div whileHover={{
                             scale: 1.2,
                             transition: { duration: .2 },

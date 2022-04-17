@@ -35,9 +35,6 @@ function SendScreen(props) {
             }, 1000 * 60); // 60 Seconds
         };
 
-        const increaseBattery = () => {
-            
-        }
 
         return (
             <SendWrapper>
@@ -49,7 +46,8 @@ function SendScreen(props) {
                         </Title>
                         :
                         <Title>{props.disabled ? props.await : props.done} {props.name}<Dots show={props.disabled} /></Title>}
-                    <Subtitle disabled={props.disabled}>{props.name === "Home" ? "Select if you would like to Charge the Car or Charge the Home" : ""}</Subtitle>
+
+                    <Subtitle disabled={props.disabled}>{props.name === "Home" ? "Select if you would like to Charge the Car or Charge the Home" : props.command === "grid" ? "Select a grid to simulate." : ""}</Subtitle>
                 </Header>
                 {props.command === "home" &&
                     <Options disabled={props.disabled}>
@@ -81,7 +79,37 @@ function SendScreen(props) {
                         </Title>
                     </>
                     :
-                    <srcIcon.src height="20vh" />
+                    props.command === "grid" ? <></> :<srcIcon.src height="20vh" />
+                }
+                {
+                    props.command === "grid" &&
+                    <Options>
+                    <motion.div whileHover={{
+                        scale: 1.2,
+                        transition: { duration: .2 },
+                    }}
+                        whileTap={{ scale: 0.9 }}>
+                        <srcIcon.src2 height="15vh" onClick={() => { props.disabled ? "" : props.sendCommand('ng') }} />
+                        <Subtitle>Nanogrid</Subtitle>
+                    </motion.div>
+                    <motion.div whileHover={{
+                        scale: 1.2,
+                        transition: { duration: .2 },
+                    }}
+                        whileTap={{ scale: 0.9 }}>
+                        <srcIcon.src3 height="15vh" onClick={() => {  props.disabled ? "" : props.sendCommand('ig') }} />
+                        <Subtitle>Microgrid</Subtitle>
+                    </motion.div>
+                    <motion.div whileHover={{
+                        scale: 1.2,
+                        transition: { duration: .2 },
+                    }}
+                        whileTap={{ scale: 0.9 }} style={{ display: 'flex', alignItems: 'center', flexDirection: 'column', justifyContent: 'center' }}>
+                        <srcIcon.src4 height="15vh" onClick={() => {  props.disabled ? "" : props.sendCommand('ag') }} />
+                        <Subtitle>Macrogrid</Subtitle>
+                    </motion.div>
+                </Options>
+              
                 }
                 <Description>
                     {props.description}
@@ -162,8 +190,8 @@ const Description = styled.div`
 const GoBack = styled(BackArrow)`
   height: 6vh;
   position: absolute;
-  left:0;
-  top:0;
+  left:4vh;
+  top:6vh;
   padding: 2em;
   transition: transform .2s;
   pointer-events: ${({ disabled }) => disabled ? "none" : "auto"};

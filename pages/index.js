@@ -31,6 +31,10 @@ export default class Home extends React.Component {
       g: false,
       c: false,
       q: false,
+      ig: false,
+      ag: false,
+      ng: false,
+      descriptionText: '',
       disabled: true,
       batteryModal: false,
       battery: { actual: null, simulated: 100, charging: false, connected: false, color: "#00ff00" },
@@ -90,6 +94,9 @@ export default class Home extends React.Component {
       g: false,
       c: false,
       q: false,
+      ig: false,
+      ng: false,
+      ag: false,
       disabled: false,
     });
   }
@@ -212,6 +219,10 @@ export default class Home extends React.Component {
     });
   }
 
+  randomSelect = (arr) => {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
   sendCommand = (data) => {
     const { deviceCache, characteristicCache } = this.state;
 
@@ -230,7 +241,8 @@ export default class Home extends React.Component {
         this.setState({
           h: true,
           disabled: true,
-          battery: battery
+          battery: battery,
+          descriptionText: Descriptions.home
         });
       }
       if (data === 's') {
@@ -239,7 +251,8 @@ export default class Home extends React.Component {
         this.setState({
           s: true,
           disabled: true,
-          battery: battery
+          battery: battery,
+          descriptionText: Descriptions.solar
         });
       }
       if (data === 'w') {
@@ -248,7 +261,8 @@ export default class Home extends React.Component {
         this.setState({
           w: true,
           disabled: true,
-          battery: battery
+          battery: battery,
+          descriptionText: this.randomSelect(Descriptions.work)
         });
       }
       if (data === 'o') {
@@ -257,7 +271,8 @@ export default class Home extends React.Component {
         this.setState({
           o: true,
           disabled: true,
-          battery: battery
+          battery: battery,
+          descriptionText: Descriptions.outage
         });
       }
       if (data === 'g') {
@@ -265,8 +280,9 @@ export default class Home extends React.Component {
         battery.charging = false;
         this.setState({
           g: true,
-          disabled: true,
-          battery: battery
+          disabled: false,
+          battery: battery,
+          descriptionText: Descriptions.grid
         });
       }
       if (data === 'c') {
@@ -274,30 +290,62 @@ export default class Home extends React.Component {
         battery.charging = false;
         this.setState({
           c: true,
-          disabled: true
+          disabled: true,
+          descriptionText: Descriptions.charging,
         });
       }
-      if (data === 'qc' || data === 'qh') {
+      if (data === 'qc') {
         let battery = this.state.battery;
         battery.charging = true;
         this.setState({
           batteryModal: true,
           disabled: false,
           battery: battery,
+          descriptionText: this.randomSelect(Descriptions.carCharge),
           h: false,
         })
       }
-      if(data === 'q'){
+      if (data === 'qh') {
         let battery = this.state.battery;
         battery.charging = true;
         this.setState({
           batteryModal: true,
           disabled: false,
           battery: battery,
+          descriptionText: this.randomSelect(Descriptions.homeCharge),
+          h: false,
+        })
+      }
+      if (data === 'q') {
+        let battery = this.state.battery;
+        battery.charging = true;
+        this.setState({
+          batteryModal: true,
+          disabled: false,
+          battery: battery,
+          descriptionText: Descriptions.battery,
           s: false,
           c: false
         })
         return;
+      }
+      if (data === 'ng'){
+        this.setState({
+          disabled: true,
+          descriptionText: Descriptions.nano
+        })
+      }
+      if (data === 'ig'){
+        this.setState({
+          disabled: true,
+          descriptionText: Descriptions.micro
+        })
+      }
+      if (data === 'ag'){
+        this.setState({
+          disabled: true,
+          descriptionText: Descriptions.macro
+        })
       }
       if (!data || !characteristicCache) {
         return;
@@ -370,7 +418,8 @@ export default class Home extends React.Component {
   render() {
     const { isConnected, paired_devices, battery,
       lowBattery, receiveModal, receivedData,
-      disabled, h, w, o, s, g, c, batteryModal, lowBatteryScreen } = this.state;
+      disabled, h, w, o, s, g, c, batteryModal, 
+      lowBatteryScreen, descriptionText } = this.state;
     return (
       <HomeWrap>
         <Head>
@@ -416,29 +465,29 @@ export default class Home extends React.Component {
             </SendHome>
 
             <SendWork onClick={() => { this.sendCommand('w'); }}>
-              <WorkCommand  />
+              <WorkCommand />
               <Title>Work</Title>
             </SendWork>
             <SendSolar onClick={() => { this.sendCommand('s'); }}>
               <SolarCommand />
-              <Title style={{width:"20vh"}}> Solar Station</Title>
+              <Title style={{ width: "20vh" }}> Solar Station</Title>
             </SendSolar>
             <SendOutage onClick={() => { this.sendCommand('o'); }}>
               <OutageCommand />
-              <Title style={{width:"20vh"}}>Power Outage Scenario</Title>
+              <Title style={{ width: "20vh" }}>Power Outage Scenario</Title>
             </SendOutage>
             <SendGrid onClick={() => { this.sendCommand('g'); }}>
               <Grid />
-              <Title style={{width:"30vh"}}> Grid Simulation</Title>
+              <Title style={{ width: "20vh" }}>Explore The Grid</Title>
             </SendGrid>
             <SendSuperCharge onClick={() => { this.sendCommand('c'); }}>
               <SuperChargeCommand />
-              <Title style={{width:"30vh"}}>Supercharge</Title>
+              <Title style={{ width: "30vh" }}>Supercharge</Title>
             </SendSuperCharge>
           </>
         }
 
-        {battery.connected && !batteryModal && <BatteryFooter onClick={() => { this.setState({ batteryModal: true }) }}>
+        {battery.connected && !batteryModal && <BatteryFooter onClick={() => { this.setState({ batteryModal: true, descriptionText: Descriptions.battery }) }}>
           <Battery level={battery.simulated} color={battery.color} height="10vh" />
         </BatteryFooter>}
 
@@ -476,26 +525,26 @@ export default class Home extends React.Component {
 
         <SendScreen show={h} command="home" disabled={disabled}
           resetModal={() => { this.resetModal() }} sendCommand={this.sendCommand} name="Home"
-          description={Descriptions.home} await="Going" done="Arrived" />
+          description={descriptionText} await="Going" done="Arrived" />
         <SendScreen show={s} command="solar" disabled={disabled}
           resetModal={() => { this.resetModal() }} sendCommand={this.sendCommand} name="Solar Charging Station"
-          description={Descriptions.solar} await="Going to" done="Arrived at" />
+          description={descriptionText} await="Going to" done="Arrived at" />
         <SendScreen show={w} command="work" disabled={disabled}
           resetModal={() => { this.resetModal() }} sendCommand={this.sendCommand} name="Work"
-          description={Descriptions.work} await="Going to" done="Arrived at" />
+          description={descriptionText} await="Going to" done="Arrived at" />
         <SendScreen show={o} command="outage" disabled={disabled}
           resetModal={() => { this.resetModal() }} sendCommand={this.sendCommand} name="Power Outage Scenario"
-          description={Descriptions.outage} await="Initiating" done="Completed" />
-        <SendScreen show={g} command="grid" disabled={disabled}
-          resetModal={() => { this.resetModal() }} sendCommand={this.sendCommand} name="Grid Simulation"
-          description={Descriptions.grid} await="Initiating" done="Completed" />
+          description={descriptionText} await="Initiating" done="Completed" />
+        <SendScreen show={g} disabled={disabled} command="grid"
+          resetModal={() => { this.resetModal() }} sendCommand={this.sendCommand} name=" The Grid"
+          description={descriptionText} await="Exploring" done="Explore" />
         <SendScreen show={c} command="super" disabled={disabled}
           resetModal={() => { this.resetModal() }} sendCommand={this.sendCommand} name="Super Charging Station"
-          description={Descriptions.super} await="Going to" done="Arrived at" />
+          description={descriptionText} await="Going to" done="Arrived at" />
         <SendScreen show={batteryModal || lowBatteryScreen} sendCommand={this.sendCommand} command="battery" disabled={false}
           resetModal={() => { this.closeBatteryModal() }} lowBattery={lowBattery}
           name="Car Battery" charging={battery.charging} color={battery.color} level={battery.simulated} await="Charging" done="Charged"
-          description={Descriptions.battery} />
+          description={descriptionText} />
       </HomeWrap>
     )
   }
@@ -513,14 +562,14 @@ const HomeWrap = styled.div`
 
 const BluetoothWrapper = styled.div`
   position: absolute;
-  left: 0;
-  top: 2vh;
+  left: 5vh;
+  top: 7vh;
   z-index: 1;
 `;
 
 const HomeHeader = styled.div`
   position: absolute;
-  top: 4vh;
+  top: 6vh;
   display: flex;
   width: 100vw;
   align-items: center;
@@ -530,8 +579,8 @@ const HomeHeader = styled.div`
 const BatteryFooter = styled.div`
   position: absolute;
   z-index: 1000;
-  right: 2vh;
-  top: 1vh;
+  right: 5vh;
+  top: 7vh;
   &:hover, &:active{
     transform: scale(1.05);
   }

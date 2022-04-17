@@ -291,7 +291,7 @@ export default class Home extends React.Component {
         this.setState({
           c: true,
           disabled: true,
-          descriptionText: Descriptions.charging,
+          descriptionText: Descriptions.super,
         });
       }
       if (data === 'qc') {
@@ -351,22 +351,12 @@ export default class Home extends React.Component {
         return;
       }
 
+      data = '#' + data + '!';
       data += '\n';
 
-      if (data.length > 20) {
-        let chunks = data.match(/(.|[\r\n]){1,20}/g);
-
-        writeToCharacteristic(characteristicCache, chunks[0]);
-
-        for (let i = 1; i < chunks.length; i++) {
-          setTimeout(() => {
-            writeToCharacteristic(characteristicCache, chunks[i]);
-          }, i * 100);
-        }
-      }
-      else {
-        characteristicCache.writeValue(new TextEncoder().encode(data)).catch(error => { console.log(error) })
-      }
+      
+      characteristicCache.writeValue(new TextEncoder().encode(data)).catch(error => { console.log(error) })
+      console.log('sent', data);
 
     }
   }
@@ -418,7 +408,7 @@ export default class Home extends React.Component {
   render() {
     const { isConnected, paired_devices, battery,
       lowBattery, receiveModal, receivedData,
-      disabled, h, w, o, s, g, c, batteryModal, 
+      disabled, h, w, o, s, g, c, batteryModal, idle, 
       lowBatteryScreen, descriptionText } = this.state;
     return (
       <HomeWrap>
@@ -522,7 +512,8 @@ export default class Home extends React.Component {
         >
           {receivedData}
         </ReactModal>
-
+        <SendScreen show={idle} command="idle" resetModal={() => { this.resetModal() }} sendCommand={this.sendCommand} name="Idle Driving"
+          description={descriptionText}/>
         <SendScreen show={h} command="home" disabled={disabled}
           resetModal={() => { this.resetModal() }} sendCommand={this.sendCommand} name="Home"
           description={descriptionText} await="Going" done="Arrived" />

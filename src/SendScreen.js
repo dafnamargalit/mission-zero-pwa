@@ -12,8 +12,8 @@ function SendScreen(props) {
         useEffect(() => {
             if (!props.disabled) {
                 restartAutoReset();
-                if( (props.command === "solar" || props.command === "super")  && sent === false) {
-                   setTimeout( () => {props.sendCommand('q')}, 1000);
+                if ((props.command === "solar" || props.command === "super") && sent === false) {
+                    setTimeout(() => { props.sendCommand('q') }, 1000);
                     setSent(true);
                 }
                 window.addEventListener('mousemove', onMouseMove);
@@ -79,37 +79,36 @@ function SendScreen(props) {
                         </Title>
                     </>
                     :
-                    props.command === "grid" ? <></> :<srcIcon.src height="20vh" />
+                    props.command === "grid" ? <></> : <srcIcon.src height="20vh" />
                 }
                 {
                     props.command === "grid" &&
                     <Options>
-                    <motion.div whileHover={{
-                        scale: 1.2,
-                        transition: { duration: .2 },
-                    }}
-                        whileTap={{ scale: 0.9 }}>
-                        <srcIcon.src2 height="15vh" onClick={() => { props.disabled ? "" : props.sendCommand('ng') }} />
-                        <Subtitle>Nanogrid</Subtitle>
-                    </motion.div>
-                    <motion.div whileHover={{
-                        scale: 1.2,
-                        transition: { duration: .2 },
-                    }}
-                        whileTap={{ scale: 0.9 }}>
-                        <srcIcon.src3 height="15vh" onClick={() => {  props.disabled ? "" : props.sendCommand('ig') }} />
-                        <Subtitle>Microgrid</Subtitle>
-                    </motion.div>
-                    <motion.div whileHover={{
-                        scale: 1.2,
-                        transition: { duration: .2 },
-                    }}
-                        whileTap={{ scale: 0.9 }} style={{ display: 'flex', alignItems: 'center', flexDirection: 'column', justifyContent: 'center' }}>
-                        <srcIcon.src4 height="15vh" onClick={() => {  props.disabled ? "" : props.sendCommand('ag') }} />
-                        <Subtitle>Macrogrid</Subtitle>
-                    </motion.div>
-                </Options>
-              
+                        <motion.div whileHover={{
+                            scale: 1.2,
+                            transition: { duration: .2 },
+                        }}
+                            whileTap={{ scale: 0.9 }}>
+                            <srcIcon.src2 height="15vh" onClick={() => { props.disabled ? "" : props.sendCommand('ng') }} />
+                            <Subtitle>Nanogrid</Subtitle>
+                        </motion.div>
+                        <motion.div whileHover={{
+                            scale: 1.2,
+                            transition: { duration: .2 },
+                        }}
+                            whileTap={{ scale: 0.9 }}>
+                            <srcIcon.src3 height="15vh" onClick={() => { props.disabled ? "" : props.sendCommand('ig') }} />
+                            <Subtitle>Microgrid</Subtitle>
+                        </motion.div>
+                        <motion.div whileHover={{
+                            scale: 1.2,
+                            transition: { duration: .2 },
+                        }}
+                            whileTap={{ scale: 0.9 }} style={{ display: 'flex', alignItems: 'center', flexDirection: 'column', justifyContent: 'center' }}>
+                            <srcIcon.src4 height="15vh" onClick={() => { props.disabled ? "" : props.sendCommand('ag') }} />
+                            <Subtitle>Macrogrid</Subtitle>
+                        </motion.div>
+                    </Options>
                 }
                 <Description>
                     {props.description}

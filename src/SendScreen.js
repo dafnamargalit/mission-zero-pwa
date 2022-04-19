@@ -31,7 +31,7 @@ function SendScreen(props) {
             }
             timeout = setTimeout(() => {
                 props.resetModal();
-                props.sendCommand('i');
+                props.sendCommand('t');
             }, 1000 * 60); // 60 Seconds
         };
 

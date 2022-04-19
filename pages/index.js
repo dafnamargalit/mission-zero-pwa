@@ -10,7 +10,7 @@ import {
 } from '../icons';
 import { Descriptions, CarColors } from '../src/constants';
 import { motion } from 'framer-motion';
-import ReactModal from 'react-modal';
+// import ReactModal from 'react-modal';
 import SendScreen from '../src/SendScreen';
 
 export default class Home extends React.Component {

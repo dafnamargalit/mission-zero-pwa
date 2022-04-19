@@ -5,7 +5,7 @@ import {
   Logo, Car, Battery, Grid,
   BLEConnect, BLEDisconnect,
   HomeCommand, WorkCommand,
-  SolarCommand, SuperChargeCommand,
+  SolarCommand,
   OutageCommand
 } from '../icons';
 import { Descriptions, CarColors } from '../src/constants';
@@ -524,8 +524,8 @@ export default class Home extends React.Component {
           resetModal={() => { this.resetModal() }} sendCommand={this.sendCommand} name="Work"
           description={descriptionText} await="Going to" done="Arrived at" />
         <SendScreen show={o} command="outage" disabled={disabled}
-          resetModal={() => { this.resetModal() }} sendCommand={this.sendCommand} name="Power Outage Scenario"
-          description={descriptionText} await="Initiating" done="Completed" />
+          resetModal={() => { this.resetModal() }} sendCommand={this.sendCommand} name=""
+          description={descriptionText} await="Initiating Power Outage Simulation" done="Power Outage Simulation In Progress" />
         <SendScreen show={g} disabled={disabled} command="grid"
           resetModal={() => { this.resetModal() }} sendCommand={this.sendCommand} name=" The Grid"
           description={descriptionText} await="Exploring" done="Explore" />

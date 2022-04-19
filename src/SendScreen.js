@@ -179,7 +179,7 @@ const Description = styled.div`
   align-items: center;
   color: white;
   font-family: 'Helvetica', 'Arial', sans-serif;
-  font-size: 20px;
+  font-size: 25px;
   padding: 10vh;
   max-width: 700px;
   text-align: center;

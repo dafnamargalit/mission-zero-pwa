@@ -481,7 +481,7 @@ export default class Home extends React.Component {
           <Battery level={battery.simulated} color={battery.color} height="10vh" />
         </BatteryFooter>}
 
-        <ReactModal
+        {/* <ReactModal
           isOpen={receiveModal}
           onRequestClose={this.closeModal}
           ariaHideApp={false}
@@ -511,7 +511,7 @@ export default class Home extends React.Component {
           }
         >
           {receivedData}
-        </ReactModal>
+        </ReactModal> */}
         <SendScreen show={idle} command="idle" resetModal={() => { this.resetModal() }} sendCommand={this.sendCommand} name="Idle Driving"
           description={descriptionText} />
         <SendScreen show={h} command="home" disabled={disabled}

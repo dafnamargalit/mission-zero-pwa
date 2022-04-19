@@ -29,7 +29,7 @@ export default class Home extends React.Component {
       w: false,
       o: false,
       g: false,
-      c: false,
+      dl: false,
       q: false,
       ig: false,
       ag: false,
@@ -92,7 +92,7 @@ export default class Home extends React.Component {
       s: false,
       o: false,
       g: false,
-      c: false,
+      dl: false,
       q: false,
       ig: false,
       ng: false,
@@ -285,13 +285,13 @@ export default class Home extends React.Component {
           descriptionText: Descriptions.grid
         });
       }
-      if (data === 'c') {
+      if (data === 'dl') {
         let battery = this.state.battery;
         battery.charging = false;
         this.setState({
-          c: true,
+          dl: true,
           disabled: true,
-          descriptionText: Descriptions.super,
+          descriptionText: Descriptions.idle,
         });
       }
       if (data === 'qc') {
@@ -329,19 +329,19 @@ export default class Home extends React.Component {
         })
         return;
       }
-      if (data === 'ng'){
+      if (data === 'ng') {
         this.setState({
           disabled: true,
           descriptionText: Descriptions.nano
         })
       }
-      if (data === 'ig'){
+      if (data === 'ig') {
         this.setState({
           disabled: true,
           descriptionText: Descriptions.micro
         })
       }
-      if (data === 'ag'){
+      if (data === 'ag') {
         this.setState({
           disabled: true,
           descriptionText: Descriptions.macro
@@ -354,7 +354,7 @@ export default class Home extends React.Component {
       data = '#' + data + '!';
       data += '\n';
 
-      
+
       characteristicCache.writeValue(new TextEncoder().encode(data)).catch(error => { console.log(error) })
       console.log('sent', data);
 
@@ -408,7 +408,7 @@ export default class Home extends React.Component {
   render() {
     const { isConnected, paired_devices, battery,
       lowBattery, receiveModal, receivedData,
-      disabled, h, w, o, s, g, c, batteryModal, idle, 
+      disabled, h, w, o, s, g, dl, batteryModal, idle,
       lowBatteryScreen, descriptionText } = this.state;
     return (
       <HomeWrap>
@@ -470,10 +470,10 @@ export default class Home extends React.Component {
               <Grid />
               <Title style={{ width: "20vh" }}>Explore The Grid</Title>
             </SendGrid>
-            <SendSuperCharge onClick={() => { this.sendCommand('c'); }}>
-              <SuperChargeCommand />
-              <Title style={{ width: "30vh" }}>Supercharge</Title>
-            </SendSuperCharge>
+            <SendIdle onClick={() => { this.sendCommand('dl'); }}>
+              <IdleCommand carColor={'white'} />
+              <Title style={{ width: "30vh" }}>Drive Around</Title>
+            </SendIdle>
           </>
         }
 
@@ -513,7 +513,7 @@ export default class Home extends React.Component {
           {receivedData}
         </ReactModal>
         <SendScreen show={idle} command="idle" resetModal={() => { this.resetModal() }} sendCommand={this.sendCommand} name="Idle Driving"
-          description={descriptionText}/>
+          description={descriptionText} />
         <SendScreen show={h} command="home" disabled={disabled}
           resetModal={() => { this.resetModal() }} sendCommand={this.sendCommand} name="Home"
           description={descriptionText} await="Going" done="Arrived" />
@@ -529,9 +529,9 @@ export default class Home extends React.Component {
         <SendScreen show={g} disabled={disabled} command="grid"
           resetModal={() => { this.resetModal() }} sendCommand={this.sendCommand} name=" The Grid"
           description={descriptionText} await="Exploring" done="Explore" />
-        <SendScreen show={c} command="super" disabled={disabled}
-          resetModal={() => { this.resetModal() }} sendCommand={this.sendCommand} name="Super Charging Station"
-          description={descriptionText} await="Going to" done="Arrived at" />
+        <SendScreen show={dl} command="idle" disabled={false}
+          resetModal={() => { this.resetModal() }} sendCommand={this.sendCommand} name="Driving Around"
+          description={descriptionText} await="" done="" />
         <SendScreen show={batteryModal || lowBatteryScreen} sendCommand={this.sendCommand} command="battery" disabled={false}
           resetModal={() => { this.closeBatteryModal() }} lowBattery={lowBattery}
           name="Car Battery" charging={battery.charging} color={battery.color} level={battery.simulated} await="Charging" done="Charged"
@@ -634,6 +634,21 @@ transform: translateY(${({ x }) => x == 0 ? "-25vh" : (x == 2 ? "25vh" : 0)}) tr
   path {fill: ${({ carColor }) => carColor ? carColor : 'white'};}
 `;
 
+const IdleCommand = styled(Car)`
+height: 10vh;
+width: 10vh;
+border-radius: 50%;
+margin-left: auto;
+margin-right: auto;
+left: 0;
+right: 0;
+transition: transform .2s;
+transform: translateY(${({ x }) => x == 0 ? "-25vh" : (x == 2 ? "25vh" : 0)}) translateX(${({ x }) => x == 1 ? "-25vh" : (x == 3 ? "25vh" : 0)});
+&:hover, &:active{
+  transform: scale(1.05) translateY(${({ x }) => x == 0 ? "-25vh" : (x == 2 ? "25vh" : 0)}) translateX(${({ x }) => x == 1 ? "-25vh" : (x == 3 ? "25vh" : 0)});
+}
+  path {fill: ${({ carColor }) => carColor ? carColor : 'white'};}
+`;
 const BLEConnectIcon = styled(BLEConnect)`
   width: 60px;
 `;
@@ -751,7 +766,7 @@ const Subtitle = styled.div`
     margin-top: 1vh;
 `;
 
-const SendSuperCharge = styled.div`
+const SendIdle = styled.div`
   position: absolute;
   height: ${({ customHeight }) => customHeight ? `${customHeight}vh` : "30vh"};
   width: ${({ customHeight }) => customHeight ? `${customHeight}vh` : "10vh"};

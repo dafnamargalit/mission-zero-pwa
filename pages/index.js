@@ -464,7 +464,7 @@ export default class Home extends React.Component {
             </SendSolar>
             <SendOutage onClick={() => { this.sendCommand('o'); }}>
               <OutageCommand />
-              <Title style={{ width: "20vh" }}>Power Outage Scenario</Title>
+              <Title style={{ width: "20vh" }}>Simulate Power Outage</Title>
             </SendOutage>
             <SendGrid onClick={() => { this.sendCommand('g'); }}>
               <Grid />

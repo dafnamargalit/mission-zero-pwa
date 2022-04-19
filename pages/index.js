@@ -272,7 +272,7 @@ export default class Home extends React.Component {
           o: true,
           disabled: true,
           battery: battery,
-          descriptionText: Descriptions.outage
+          descriptionText: this.randomSelect(Descriptions.outage)
         });
       }
       if (data === 'g') {
@@ -477,7 +477,7 @@ export default class Home extends React.Component {
           </>
         }
 
-        {battery.connected && !batteryModal && <BatteryFooter onClick={() => { this.setState({ batteryModal: true, descriptionText: Descriptions.battery }) }}>
+        {battery.connected && !batteryModal && <BatteryFooter onClick={() => { this.setState({ batteryModal: true }) }}>
           <Battery level={battery.simulated} color={battery.color} height="10vh" />
         </BatteryFooter>}
 
@@ -535,7 +535,7 @@ export default class Home extends React.Component {
         <SendScreen show={batteryModal || lowBatteryScreen} sendCommand={this.sendCommand} command="battery" disabled={false}
           resetModal={() => { this.closeBatteryModal() }} lowBattery={lowBattery}
           name="Car Battery" charging={battery.charging} color={battery.color} level={battery.simulated} await="Charging" done="Charged"
-          description={descriptionText} />
+          description={Descriptions.battery} />
       </HomeWrap>
     )
   }

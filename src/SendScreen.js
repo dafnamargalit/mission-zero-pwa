@@ -12,9 +12,14 @@ function SendScreen(props) {
         useEffect(() => {
             if (!props.disabled) {
                 restartAutoReset();
-                if ((props.command === "solar" || props.command === "super") && sent === false) {
+                if ((props.command === "solar") && sent === false) {
                     setTimeout(() => { props.sendCommand('q') }, 1000);
                     setSent(true);
+                }
+                if ((props.command === "grid")){
+                    props.sendCommand('ng');
+                    setTimeout(() => { props.sendCommand('ig') }, 3000);
+                    setTimeout(() => { props.sendCommand('ag') }, 6000);
                 }
                 window.addEventListener('mousemove', onMouseMove);
                 window.addEventListener('touchstart', onMouseMove);

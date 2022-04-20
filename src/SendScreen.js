@@ -3,12 +3,14 @@ import styled from 'styled-components';
 import { BackArrow, ChargingIcon } from '../icons';
 import { CommandIcons } from './constants';
 import { motion } from 'framer-motion';
-
+import { Descriptions } from './constants';
 function SendScreen(props) {
     if (props.show) {
         const srcIcon = CommandIcons.find(icon => icon.name === props.command);
         let timeout = null;
         const [sent, setSent] = useState(false);
+        const [sending, setSending] = useState(false);
+        const [description, setDescription] = useState(props.description)
         useEffect(() => {
             if (!props.disabled) {
                 restartAutoReset();
@@ -16,10 +18,13 @@ function SendScreen(props) {
                     setTimeout(() => { props.sendCommand('q') }, 1000);
                     setSent(true);
                 }
-                if ((props.command === "grid")){
-                    props.sendCommand('ng');
-                    setTimeout(() => { props.sendCommand('ig') }, 3000);
-                    setTimeout(() => { props.sendCommand('ag') }, 6000);
+                if ((props.command === "grid") && sent === false && sending === false){
+                    setSending(true);
+                    console.log("sending")
+                    setTimeout(() => { props.sendCommand('ng'); console.log('ng sent')}, 2000);
+                    setTimeout(() => { props.sendCommand('ig'); console.log('ig sent')}, 2000);
+                    setTimeout(() => { props.sendCommand('ag'); console.log('ag sent'); console.log("sending false")
+                    setSending(false);}, 2000);
                 }
                 window.addEventListener('mousemove', onMouseMove);
                 window.addEventListener('touchstart', onMouseMove);
@@ -30,6 +35,14 @@ function SendScreen(props) {
             restartAutoReset();
         };
 
+        const rotateGrid = (sel) => {
+            props.sendCommand(sel);
+        }
+        const gridSelect = (sel) => {
+            props.sendCommand(sel);
+            setDescription(Descriptions[sel]);
+            setSent(true);
+        };
         const restartAutoReset = () => {
             if (timeout) {
                 clearTimeout(timeout);
@@ -94,7 +107,7 @@ function SendScreen(props) {
                             transition: { duration: .2 },
                         }}
                             whileTap={{ scale: 0.9 }}>
-                            <srcIcon.src2 height="15vh" onClick={() => { props.disabled ? "" : props.sendCommand('ng') }} />
+                            <srcIcon.src2 height="15vh" onClick={() => { props.disabled ? "" : gridSelect('ng') }} />
                             <Subtitle>Nanogrid</Subtitle>
                         </motion.div>
                         <motion.div whileHover={{
@@ -102,7 +115,7 @@ function SendScreen(props) {
                             transition: { duration: .2 },
                         }}
                             whileTap={{ scale: 0.9 }}>
-                            <srcIcon.src3 height="15vh" onClick={() => { props.disabled ? "" : props.sendCommand('ig') }} />
+                            <srcIcon.src3 height="15vh" onClick={() => { props.disabled ? "" : gridSelect('ig') }} />
                             <Subtitle>Microgrid</Subtitle>
                         </motion.div>
                         <motion.div whileHover={{
@@ -110,13 +123,13 @@ function SendScreen(props) {
                             transition: { duration: .2 },
                         }}
                             whileTap={{ scale: 0.9 }} style={{ display: 'flex', alignItems: 'center', flexDirection: 'column', justifyContent: 'center' }}>
-                            <srcIcon.src4 height="15vh" onClick={() => { props.disabled ? "" : props.sendCommand('ag') }} />
+                            <srcIcon.src4 height="15vh" onClick={() => { props.disabled ? "" : gridSelect('ag') }} />
                             <Subtitle>Macrogrid</Subtitle>
                         </motion.div>
                     </Options>
                 }
                 <Description>
-                    {props.description}
+                    {description}
                 </Description>
             </SendWrapper>
         )

@@ -18,7 +18,7 @@ export default class Home extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      isConnected: false,
+      isConnected: true,
       paired_devices: [],
       characteristicCache: null,
       receivedData: null,
@@ -332,19 +332,16 @@ export default class Home extends React.Component {
       if (data === 'ng') {
         this.setState({
           disabled: true,
-          descriptionText: Descriptions.nano
         })
       }
       if (data === 'ig') {
         this.setState({
           disabled: true,
-          descriptionText: Descriptions.micro
         })
       }
       if (data === 'ag') {
         this.setState({
           disabled: true,
-          descriptionText: Descriptions.macro
         })
       }
       if (!data || !characteristicCache) {
@@ -526,7 +523,7 @@ export default class Home extends React.Component {
         <SendScreen show={o} command="outage" disabled={disabled}
           resetModal={() => { this.resetModal() }} sendCommand={this.sendCommand} name=""
           description={descriptionText} await="Initiating Power Outage Simulation" done="Power Outage Simulation In Progress" />
-        <SendScreen show={g} disabled={disabled} command="grid"
+        <SendScreen show={g} disabled={false} command="grid"
           resetModal={() => { this.resetModal() }} sendCommand={this.sendCommand} name=" The Grid"
           description={descriptionText} await="Exploring" done="Explore" />
         <SendScreen show={dl} command="idle" disabled={false}

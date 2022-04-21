@@ -7,9 +7,12 @@ import { Descriptions } from './constants';
 function SendScreen(props) {
     if (props.show) {
         const srcIcon = CommandIcons.find(icon => icon.name === props.command);
-        let timeout = null;
         const [sent, setSent] = useState(false);
         const [sending, setSending] = useState(false);
+        let timeout = null;
+        const [cleartimer1, setTimer1] = useState(null);
+        const [cleartimer2, setTimer2] = useState(null);
+        const [cleartimer3, setTimer3] = useState(null);
         const [description, setDescription] = useState(props.description)
         useEffect(() => {
             if (!props.disabled) {
@@ -18,13 +21,27 @@ function SendScreen(props) {
                     setTimeout(() => { props.sendCommand('q') }, 1000);
                     setSent(true);
                 }
-                if ((props.command === "grid") && sent === false && sending === false){
+                if ((props.command === "grid") && sent === false && sending === false) {
                     setSending(true);
                     console.log("sending")
-                    setTimeout(() => { props.sendCommand('NG');}, 2000);
-                    setTimeout(() => { props.sendCommand('IG'); }, 2000);
-                    setTimeout(() => { props.sendCommand('AG'); console.log("sending false")
-                    setSending(false);}, 2000);
+                    const timer1 = () => setTimeout(() => {
+                        props.sendCommand('NG');
+                        const timer2 = () => setTimeout(() => {
+                            props.sendCommand('IG');
+                            const timer3 = () => setTimeout(() => {
+                                props.sendCommand('AG'); console.log("sending false")
+                                setSending(false);
+                            }, 2000);
+                            const timerId3 = timer3();
+                            setTimer3(timerId3);
+                        }, 2000);
+                        const timerId2 = timer2();
+                        setTimer2(timerId2);
+                    }, 2000);
+                    const timerId1 = timer1();
+
+                    setTimer1(timerId1);
+
                 }
                 window.addEventListener('mousemove', onMouseMove);
                 window.addEventListener('touchstart', onMouseMove);
@@ -35,13 +52,14 @@ function SendScreen(props) {
             restartAutoReset();
         };
 
-        const rotateGrid = (sel) => {
-            props.sendCommand(sel);
-        }
         const gridSelect = (sel) => {
+            clearTimeout(cleartimer1);
+            clearTimeout(cleartimer2);
+            clearTimeout(cleartimer3);
+            setSent(true);
+            setSending(false);
             props.sendCommand(sel);
             setDescription(Descriptions[sel]);
-            setSent(true);
         };
         const restartAutoReset = () => {
             if (timeout) {

@@ -21,9 +21,9 @@ function SendScreen(props) {
                 if ((props.command === "grid") && sent === false && sending === false){
                     setSending(true);
                     console.log("sending")
-                    setTimeout(() => { props.sendCommand('NG'); console.log('NG sent')}, 2000);
-                    setTimeout(() => { props.sendCommand('IG'); console.log('IG sent')}, 2000);
-                    setTimeout(() => { props.sendCommand('AG'); console.log('AG sent'); console.log("sending false")
+                    setTimeout(() => { props.sendCommand('NG');}, 2000);
+                    setTimeout(() => { props.sendCommand('IG'); }, 2000);
+                    setTimeout(() => { props.sendCommand('AG'); console.log("sending false")
                     setSending(false);}, 2000);
                 }
                 window.addEventListener('mousemove', onMouseMove);

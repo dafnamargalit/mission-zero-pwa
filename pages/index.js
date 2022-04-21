@@ -225,7 +225,7 @@ export default class Home extends React.Component {
 
   sendCommand = (data) => {
     const { deviceCache, characteristicCache } = this.state;
-
+    console.log('sending', data);
     if (deviceCache && !deviceCache.gatt.connected) {
       this.setState({
         receiveModal: true,
@@ -350,7 +350,6 @@ export default class Home extends React.Component {
 
       data = '#' + data + '!';
       data += '\n';
-
 
       characteristicCache.writeValue(new TextEncoder().encode(data)).catch(error => { console.log(error) })
       console.log('sent', data);

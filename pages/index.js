@@ -10,7 +10,6 @@ import {
 } from '../icons';
 import { Descriptions, CarColors } from '../src/constants';
 import { motion } from 'framer-motion';
-// import ReactModal from 'react-modal';
 import SendScreen from '../src/SendScreen';
 
 export default class Home extends React.Component {
@@ -477,37 +476,6 @@ export default class Home extends React.Component {
           <Battery level={battery.simulated} color={battery.color} height="10vh" />
         </BatteryFooter>}
 
-        {/* <ReactModal
-          isOpen={receiveModal}
-          onRequestClose={this.closeModal}
-          ariaHideApp={false}
-          contentLabel="Selected Option"
-          style={{
-            overlay: {
-              backgroundColor: 'rgba(0,0,0,0.3)'
-            },
-            content: {
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: 'white',
-              color: 'black',
-              border: 'none',
-              borderRadius: '1em',
-              height: '60vh',
-              width: '80vh',
-              left: '50%',
-              top: '50%',
-              right: '0',
-              bottom: '0',
-              transform: 'translate(-50%, -50%)',
-              fontFamily: "Helvetica, Arial, sans-serif"
-            }
-          }
-          }
-        >
-          {receivedData}
-        </ReactModal> */}
         <SendScreen show={idle} command="idle" resetModal={() => { this.resetModal() }} sendCommand={this.sendCommand} name="Idle Driving"
           description={descriptionText} />
         <SendScreen show={h} command="home" disabled={disabled}

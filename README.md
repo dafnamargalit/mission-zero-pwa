@@ -1,4 +1,6 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+Most recent version deployed at: https://mz-pwa-personal.vercel.app/ 
+
+This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app). This app works only on devices in which Web Bluetooth is enabled. The purpose of this app is to act as a control panel for the Mission Zero Electric Vehicle Ecosystem Exhibit [as described here](https://missionzero.io/grid-vs-evil/).   
 
 ## Getting Started
 
